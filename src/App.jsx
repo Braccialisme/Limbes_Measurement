@@ -7,14 +7,18 @@ import { angularSeparationDeg } from './lib/geometry.js';
 import Reticle from './components/Reticle.jsx';
 import Readout from './components/Readout.jsx';
 import Calibration from './components/Calibration.jsx';
+import LensControl from './components/LensControl.jsx';
 
 export default function App() {
   const orient = useOrientation();
   const [started, setStarted] = useState(false);
   const { fix, error: gpsError } = useGeolocation(started);
-  const { videoRef, error: camError } = useCamera(started);
+  const {
+    videoRef, error: camError,
+    devices, deviceId, selectDevice, zoom, setZoom, lensKey,
+  } = useCamera(started);
 
-  const { cal, save: saveCal } = useCalibration();
+  const { cal, save: saveCal } = useCalibration(lensKey);
   const [overlay, setOverlay] = useState(null); // null | 'calibration'
   const [eyeHeightM, setEyeHeightM] = useState(1.6);
   const [markA, setMarkA] = useState(null);
@@ -80,6 +84,13 @@ export default function App() {
           <button className="btn ghost topbtn" onClick={() => setOverlay('calibration')}>
             FOV
           </button>
+          <LensControl
+            devices={devices}
+            deviceId={deviceId}
+            onSelect={selectDevice}
+            zoom={zoom}
+            onZoom={setZoom}
+          />
           <Reticle
             elevationDeg={orient.elevationDeg}
             rollDeg={orient.rollDeg}

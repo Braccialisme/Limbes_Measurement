@@ -1,31 +1,43 @@
 import { useState, useCallback } from 'react';
 
 /**
- * Échelle écran calibrée, persistée en localStorage.
- * cal = { degPerPx, refDeg, refPx, ts } ou null si jamais calibré.
- * Une calibration vaut pour l'objectif + le zoom courants ; quand le
- * sélecteur d'objectif arrivera, on clefera par lensId. Pour l'instant : une.
+ * Échelle écran calibrée, persistée en localStorage, CLEFÉE PAR OBJECTIF
+ * (lensKey = device + zoom). Changer d'objectif change le FOV → sa propre
+ * calibration. cal = { degPerPx, refDeg, refPx, ts } ou null.
  */
-const KEY = 'limbe.calibration.v1';
+const KEY = 'limbe.calibration.v2';
 
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || null; }
-  catch { return null; }
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+  catch { return {}; }
 }
 
-export function useCalibration() {
-  const [cal, setCal] = useState(load);
+export function useCalibration(lensKey) {
+  const [all, setAll] = useState(loadAll);
+  const cal = lensKey ? (all[lensKey] || null) : null;
+
+  const persist = (next) => {
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* quota */ }
+  };
 
   const save = useCallback((c) => {
-    const next = { ...c, ts: Date.now() };
-    setCal(next);
-    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* quota */ }
-  }, []);
+    if (!lensKey) return;
+    setAll((prev) => {
+      const next = { ...prev, [lensKey]: { ...c, ts: Date.now() } };
+      persist(next);
+      return next;
+    });
+  }, [lensKey]);
 
   const clear = useCallback(() => {
-    setCal(null);
-    try { localStorage.removeItem(KEY); } catch { /* ignore */ }
-  }, []);
+    if (!lensKey) return;
+    setAll((prev) => {
+      const next = { ...prev };
+      delete next[lensKey];
+      persist(next);
+      return next;
+    });
+  }, [lensKey]);
 
   return { cal, save, clear };
 }
