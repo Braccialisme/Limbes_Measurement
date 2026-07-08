@@ -1,0 +1,8 @@
+name = "limbes"
+compatibility_date = "2025-01-01"
+
+# Sert le build Vite (dist/) en static assets.
+# not_found_handling = SPA : renvoie index.html sur route inconnue (PWA).
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
