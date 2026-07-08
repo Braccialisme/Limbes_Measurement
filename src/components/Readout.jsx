@@ -23,7 +23,7 @@ const EYE_PRESETS = [
 export default function Readout({
   elevationDeg, rollDeg, headingDeg, headingSource,
   fix, gpsError, cal, eyeHeightM, onEyeHeight,
-  markA, markB, separationDeg, onMark, onClearMarks,
+  markA, markB, separationDeg, onMark, onClearMarks, onSaveMeasure,
 }) {
   const dHorizon = horizonDistanceKm(eyeHeightM);
   const fovDeg = cal ? cal.degPerPx * window.innerWidth : null;
@@ -105,6 +105,9 @@ export default function Readout({
               {' '}— plancher si au-delà
             </span>
           </div>
+        )}
+        {separationDeg != null && (
+          <button className="btn ghost" onClick={onSaveMeasure} title="journaliser">＋</button>
         )}
         {(markA || markB) && (
           <button className="btn ghost" onClick={onClearMarks}>×</button>

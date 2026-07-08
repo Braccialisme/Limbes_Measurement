@@ -161,6 +161,44 @@ html, body, #root {
   letter-spacing: 0.1em;
 }
 
+/* ---- onglets (haut, centré) ---- */
+.tabs {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top));
+  left: 50%; transform: translateX(-50%);
+  z-index: 5;
+  display: flex; gap: 2px;
+  border: 1px solid var(--brass);
+  border-radius: 4px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--steel) 70%, transparent);
+  backdrop-filter: blur(6px);
+}
+.tab {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--ivory-dim);
+  border: none;
+  cursor: pointer;
+}
+.tab.active { background: var(--brass); color: var(--steel); font-weight: 600; }
+
+/* ---- journal ---- */
+.journal-list {
+  list-style: none;
+  max-height: 46vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.journal-item { display: flex; gap: 10px; align-items: flex-start; }
+.journal-time { font-size: 10px; color: var(--ivory-dim); white-space: nowrap; padding-top: 2px; }
+.journal-body { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.journal-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ivory-dim); }
+.journal-detail { font-size: 15px; color: var(--ivory); }
+
 /* ---- sélecteur d'objectif / zoom ---- */
 .lens {
   position: absolute;

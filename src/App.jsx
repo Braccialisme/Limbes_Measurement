@@ -3,11 +3,15 @@ import { useOrientation } from './hooks/useOrientation.js';
 import { useGeolocation } from './hooks/useGeolocation.js';
 import { useCamera } from './hooks/useCamera.js';
 import { useCalibration } from './hooks/useCalibration.js';
-import { angularSeparationDeg } from './lib/geometry.js';
+import { useJournal } from './hooks/useJournal.js';
+import { angularSeparationDeg, formatDMS } from './lib/geometry.js';
 import Reticle from './components/Reticle.jsx';
 import Readout from './components/Readout.jsx';
 import Calibration from './components/Calibration.jsx';
 import LensControl from './components/LensControl.jsx';
+import Tabs from './components/Tabs.jsx';
+import Civil from './components/Civil.jsx';
+import Journal from './components/Journal.jsx';
 
 export default function App() {
   const orient = useOrientation();
@@ -19,7 +23,9 @@ export default function App() {
   } = useCamera(started);
 
   const { cal, save: saveCal } = useCalibration(lensKey);
-  const [overlay, setOverlay] = useState(null); // null | 'calibration'
+  const journal = useJournal();
+  const [tab, setTab] = useState('sight'); // 'sight' | 'civil' | 'journal'
+  const [calOpen, setCalOpen] = useState(false);
   const [eyeHeightM, setEyeHeightM] = useState(1.6);
   const [markA, setMarkA] = useState(null);
   const [markB, setMarkB] = useState(null);
@@ -45,6 +51,15 @@ export default function App() {
   const separationDeg =
     markA && markB ? angularSeparationDeg(markA, markB) : null;
 
+  const saveSeparation = useCallback(() => {
+    if (separationDeg == null) return;
+    journal.add({
+      kind: 'sep',
+      label: 'séparation A→B',
+      detail: formatDMS(separationDeg),
+    });
+  }, [separationDeg, journal]);
+
   if (!started) {
     return (
       <div className="gate">
@@ -66,22 +81,20 @@ export default function App() {
     );
   }
 
-  const calibrating = overlay === 'calibration';
-
   return (
     <div className="instrument">
       <video ref={videoRef} autoPlay playsInline muted className="liveview" />
       {camError && <div className="cam-error">caméra : {camError}</div>}
 
-      {calibrating ? (
+      {calOpen ? (
         <Calibration
           current={cal}
-          onSave={(c) => { saveCal(c); setOverlay(null); }}
-          onCancel={() => setOverlay(null)}
+          onSave={(c) => { saveCal(c); setCalOpen(false); }}
+          onCancel={() => setCalOpen(false)}
         />
       ) : (
         <>
-          <button className="btn ghost topbtn" onClick={() => setOverlay('calibration')}>
+          <button className="btn ghost topbtn" onClick={() => setCalOpen(true)}>
             FOV
           </button>
           <LensControl
@@ -91,28 +104,51 @@ export default function App() {
             zoom={zoom}
             onZoom={setZoom}
           />
-          <Reticle
-            elevationDeg={orient.elevationDeg}
-            rollDeg={orient.rollDeg}
-            markA={markA}
-            markB={markB}
-          />
-          <Readout
-            elevationDeg={orient.elevationDeg}
-            rollDeg={orient.rollDeg}
-            headingDeg={orient.headingDeg}
-            headingSource={orient.headingSource}
-            fix={fix}
-            gpsError={gpsError}
-            cal={cal}
-            eyeHeightM={eyeHeightM}
-            onEyeHeight={setEyeHeightM}
-            markA={markA}
-            markB={markB}
-            separationDeg={separationDeg}
-            onMark={mark}
-            onClearMarks={clearMarks}
-          />
+          <Tabs tab={tab} onTab={setTab} />
+
+          {tab === 'sight' && (
+            <>
+              <Reticle
+                elevationDeg={orient.elevationDeg}
+                rollDeg={orient.rollDeg}
+                markA={markA}
+                markB={markB}
+              />
+              <Readout
+                elevationDeg={orient.elevationDeg}
+                rollDeg={orient.rollDeg}
+                headingDeg={orient.headingDeg}
+                headingSource={orient.headingSource}
+                fix={fix}
+                gpsError={gpsError}
+                cal={cal}
+                eyeHeightM={eyeHeightM}
+                onEyeHeight={setEyeHeightM}
+                markA={markA}
+                markB={markB}
+                separationDeg={separationDeg}
+                onMark={mark}
+                onClearMarks={clearMarks}
+                onSaveMeasure={saveSeparation}
+              />
+            </>
+          )}
+
+          {tab === 'civil' && (
+            <Civil
+              cal={cal}
+              onCalibrate={() => setCalOpen(true)}
+              onSave={journal.add}
+            />
+          )}
+
+          {tab === 'journal' && (
+            <Journal
+              entries={journal.entries}
+              onRemove={journal.remove}
+              onClear={journal.clear}
+            />
+          )}
         </>
       )}
     </div>
