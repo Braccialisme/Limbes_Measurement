@@ -22,7 +22,7 @@ const EYE_PRESETS = [
 
 export default function Readout({
   elevationDeg, rollDeg, headingDeg, headingSource,
-  fix, eyeHeightM, onEyeHeight,
+  fix, gpsError, eyeHeightM, onEyeHeight,
   markA, markB, separationDeg, onMark, onClearMarks,
 }) {
   const dHorizon = horizonDistanceKm(eyeHeightM);
@@ -82,8 +82,11 @@ export default function Readout({
           <span className="value small">
             {fix
               ? `${fix.lat.toFixed(4)}, ${fix.lon.toFixed(4)} ±${Math.round(fix.accuracyM)}m`
-              : 'recherche…'}
+              : gpsError || 'recherche…'}
           </span>
+          {fix && gpsError && (
+            <span className="hint">{gpsError}</span>
+          )}
         </div>
       </div>
 

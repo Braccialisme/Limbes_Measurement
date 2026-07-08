@@ -9,7 +9,7 @@ import Readout from './components/Readout.jsx';
 export default function App() {
   const orient = useOrientation();
   const [started, setStarted] = useState(false);
-  const fix = useGeolocation(started);
+  const { fix, error: gpsError } = useGeolocation(started);
   const { videoRef, error: camError } = useCamera(started);
 
   const [eyeHeightM, setEyeHeightM] = useState(1.6);
@@ -74,6 +74,7 @@ export default function App() {
         headingDeg={orient.headingDeg}
         headingSource={orient.headingSource}
         fix={fix}
+        gpsError={gpsError}
         eyeHeightM={eyeHeightM}
         onEyeHeight={setEyeHeightM}
         markA={markA}

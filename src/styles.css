@@ -1,16 +1,16 @@
 /* Limbe — instrument de visée.
-   Palette : laiton gravé sur acier bruni, lisible de nuit.
-   --steel  fond, presque noir, froid
-   --ivory  graduations et texte, blanc cassé d'échelle émaillée
-   --brass  laiton : le limbe, les accents
-   --signal rouge d'index : le seul élément vif, la lecture */
+   Palette : bleu électrique sur acier bruni, lisible de nuit.
+   --steel  fond, presque noir, froid (intact)
+   --ivory  graduations et texte : périwinkle clair, majorité bleue lisible
+   --brass  bleu #3d3bd6 : le limbe, les accents, la marque
+   --signal orange #f04A00 : le seul élément vif, l'index de lecture */
 :root {
   --steel: #0b0d10;
   --steel-2: #14171c;
-  --ivory: #e8e4da;
-  --ivory-dim: #9a968c;
-  --brass: #d8b23e;
-  --signal: #ff4b33;
+  --ivory: #c7c8f5;
+  --ivory-dim: #8788a6;
+  --brass: #3d3bd6;
+  --signal: #f04a00;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
@@ -110,7 +110,8 @@ html, body, #root {
   color: var(--ivory-dim);
 }
 .value { font-size: 17px; color: var(--ivory); white-space: nowrap; }
-.row.primary .value:first-of-type { color: var(--brass); }
+/* l'élévation = LA lecture : on la passe en orange d'index */
+.row.primary .value:first-of-type { color: var(--signal); }
 .value.small { font-size: 11px; }
 .hint { font-size: 10px; color: var(--ivory-dim); line-height: 1.4; }
 .eye-input {
