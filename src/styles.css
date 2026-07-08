@@ -9,7 +9,7 @@
   --steel-2: #14171c;
   --ivory: #c7c8f5;
   --ivory-dim: #8788a6;
-  --brass: #3d3bd6;
+  --brass: #3026d9;
   --signal: #f04a00;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
@@ -151,22 +151,23 @@ html, body, #root {
 .hint.ok { color: var(--brass); }
 .row.footer { justify-content: flex-start; }
 
-/* ---- bouton flottant haut ---- */
-.topbtn {
+/* ---- barre du haut : lens | onglets | FOV, sans chevauchement ---- */
+.topbar {
   position: absolute;
   top: calc(10px + env(safe-area-inset-top));
-  right: 10px;
-  z-index: 5;
-  font-size: 12px;
-  letter-spacing: 0.1em;
+  left: 10px; right: 10px;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 8px;
 }
+.tb-left { justify-self: start; }
+.topbtn { justify-self: end; font-size: 12px; letter-spacing: 0.1em; }
 
-/* ---- onglets (haut, centré) ---- */
+/* ---- onglets (colonne centrale de la topbar) ---- */
 .tabs {
-  position: absolute;
-  top: calc(10px + env(safe-area-inset-top));
-  left: 50%; transform: translateX(-50%);
-  z-index: 5;
+  justify-self: center;
   display: flex; gap: 2px;
   border: 1px solid var(--brass);
   border-radius: 4px;
@@ -199,12 +200,8 @@ html, body, #root {
 .journal-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ivory-dim); }
 .journal-detail { font-size: 15px; color: var(--ivory); }
 
-/* ---- sélecteur d'objectif / zoom ---- */
+/* ---- sélecteur d'objectif / zoom (colonne gauche de la topbar) ---- */
 .lens {
-  position: absolute;
-  top: calc(10px + env(safe-area-inset-top));
-  left: 10px;
-  z-index: 5;
   display: flex; flex-direction: column; gap: 6px;
 }
 .lens-row { display: flex; gap: 4px; align-items: center; }

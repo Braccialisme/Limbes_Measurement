@@ -94,17 +94,23 @@ export default function App() {
         />
       ) : (
         <>
-          <button className="btn ghost topbtn" onClick={() => setCalOpen(true)}>
-            FOV
-          </button>
-          <LensControl
-            devices={devices}
-            deviceId={deviceId}
-            onSelect={selectDevice}
-            zoom={zoom}
-            onZoom={setZoom}
-          />
-          <Tabs tab={tab} onTab={setTab} />
+          <div className="topbar">
+            <div className="tb-left">
+              {tab !== 'journal' && (
+                <LensControl
+                  devices={devices}
+                  deviceId={deviceId}
+                  onSelect={selectDevice}
+                  zoom={zoom}
+                  onZoom={setZoom}
+                />
+              )}
+            </div>
+            <Tabs tab={tab} onTab={setTab} />
+            <button className="btn ghost topbtn" onClick={() => setCalOpen(true)}>
+              FOV
+            </button>
+          </div>
 
           {tab === 'sight' && (
             <>
