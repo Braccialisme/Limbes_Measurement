@@ -10,7 +10,7 @@ export default function LensControl({ devices, deviceId, onSelect, zoom, onZoom 
   return (
     <div className="lens">
       {multi && (
-        <div className="lens-row">
+        <div className="lens-grid">
           {devices.map((d, i) => (
             <button
               key={d.deviceId}
@@ -18,7 +18,7 @@ export default function LensControl({ devices, deviceId, onSelect, zoom, onZoom 
               title={d.label || `objectif ${i + 1}`}
               onClick={() => onSelect(d.deviceId)}
             >
-              {i + 1}
+              obj {i + 1}
             </button>
           ))}
         </div>

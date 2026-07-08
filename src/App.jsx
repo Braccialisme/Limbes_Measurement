@@ -13,6 +13,9 @@ import Tabs from './components/Tabs.jsx';
 import Civil from './components/Civil.jsx';
 import Journal from './components/Journal.jsx';
 
+// Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
+const BUILD = '2026-07-09 · bleu #3026d9';
+
 export default function App() {
   const orient = useOrientation();
   const [started, setStarted] = useState(false);
@@ -77,6 +80,7 @@ export default function App() {
           iOS demandera l'accès au mouvement, à la caméra et à la position.
           Tout reste sur l'appareil.
         </p>
+        <p className="build-tag">build {BUILD}</p>
       </div>
     );
   }
@@ -136,6 +140,7 @@ export default function App() {
                 onMark={mark}
                 onClearMarks={clearMarks}
                 onSaveMeasure={saveSeparation}
+                build={BUILD}
               />
             </>
           )}

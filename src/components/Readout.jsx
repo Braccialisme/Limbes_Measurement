@@ -23,7 +23,7 @@ const EYE_PRESETS = [
 export default function Readout({
   elevationDeg, rollDeg, headingDeg, headingSource,
   fix, gpsError, cal, eyeHeightM, onEyeHeight,
-  markA, markB, separationDeg, onMark, onClearMarks, onSaveMeasure,
+  markA, markB, separationDeg, onMark, onClearMarks, onSaveMeasure, build,
 }) {
   const dHorizon = horizonDistanceKm(eyeHeightM);
   const fovDeg = cal ? cal.degPerPx * window.innerWidth : null;
@@ -117,6 +117,7 @@ export default function Readout({
       <div className="row footer">
         <span className="hint">
           FOV : {fovDeg ? `calibré ≈ ${fovDeg.toFixed(0)}°` : 'non calibré — bouton FOV'}
+          {build ? ` · build ${build}` : ''}
         </span>
       </div>
     </div>

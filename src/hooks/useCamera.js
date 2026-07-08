@@ -39,8 +39,11 @@ export function useCamera(enabled) {
             : null
         );
 
-        const list = await navigator.mediaDevices.enumerateDevices();
-        setDevices(list.filter((d) => d.kind === 'videoinput'));
+        const cams = (await navigator.mediaDevices.enumerateDevices())
+          .filter((d) => d.kind === 'videoinput');
+        // Garder les objectifs ARRIÈRE (heuristique labels) ; sinon tout.
+        const back = cams.filter((d) => /back|rear|arrière|environment|facing back/i.test(d.label));
+        setDevices(back.length ? back : cams);
         if (!deviceId && settings.deviceId) setDeviceId(settings.deviceId);
       } catch (e) {
         setError(e.message);
