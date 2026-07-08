@@ -1,8 +1,18 @@
+/* VG5000 (Velvetyne) — LA police du projet, partout et pour toujours.
+   Auto-hébergée en woff2, précachée par le service worker (offline). */
+@font-face {
+  font-family: 'VG5000';
+  src: url('/fonts/VG5000-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Limbe — instrument de visée.
    Palette : bleu électrique sur acier bruni, lisible de nuit.
    --steel  fond, presque noir, froid (intact)
    --ivory  graduations et texte : périwinkle clair, majorité bleue lisible
-   --brass  bleu #3d3bd6 : le limbe, les accents, la marque
+   --brass  bleu #1e2f8f : le limbe, les accents, la marque
    --signal orange #f04A00 : le seul élément vif, l'index de lecture */
 :root {
   --steel: #0b0d10;
@@ -11,7 +21,7 @@
   --ivory-dim: #8788a6;
   --brass: #1e2f8f;
   --signal: #f04a00;
-  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --mono: 'VG5000', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -142,6 +152,7 @@ html, body, #root {
   border: 1px solid var(--ivory-dim);
   border-radius: 3px;
   cursor: pointer;
+  text-align: center;
 }
 .chip.active {
   color: var(--brass);

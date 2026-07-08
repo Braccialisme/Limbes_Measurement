@@ -14,7 +14,7 @@ import Civil from './components/Civil.jsx';
 import Journal from './components/Journal.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09b · bleu #1e2f8f';
+const BUILD = '2026-07-09c · VG5000 · #1e2f8f';
 
 export default function App() {
   const orient = useOrientation();

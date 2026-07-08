@@ -18,7 +18,7 @@ export default function LensControl({ devices, deviceId, onSelect, zoom, onZoom 
               title={d.label || `objectif ${i + 1}`}
               onClick={() => onSelect(d.deviceId)}
             >
-              obj {i + 1}
+              {i + 1}
             </button>
           ))}
         </div>
