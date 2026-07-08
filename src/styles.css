@@ -148,6 +148,53 @@ html, body, #root {
 }
 .chip:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
 
+.hint.ok { color: var(--brass); }
+.row.footer { justify-content: flex-start; }
+
+/* ---- bouton flottant haut ---- */
+.topbtn {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top));
+  right: 10px;
+  z-index: 5;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+/* ---- curseurs de mesure glissables ---- */
+.cursors { position: absolute; inset: 0; z-index: 4; }
+.cursor-line {
+  position: absolute; top: 0; bottom: 0; width: 0;
+  border-left: 1px solid var(--signal);
+  touch-action: none;
+}
+.cursor-grip {
+  position: absolute; top: 50%; left: -14px;
+  width: 28px; height: 28px; margin-top: -14px;
+  border: 1px solid var(--signal);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--signal) 18%, transparent);
+}
+.cursor-tag {
+  position: absolute; top: calc(50% + 20px); left: -5px;
+  font-family: var(--mono); font-size: 11px; color: var(--signal);
+}
+
+/* ---- panneaux (calibration, civil, journal) ---- */
+.panel {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: color-mix(in srgb, var(--steel) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--brass);
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 10px;
+}
+.panel-title {
+  color: var(--brass);
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

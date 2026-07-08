@@ -101,6 +101,31 @@ export function angularSizeToPhysicalM(angleDeg, distanceM) {
   return 2 * distanceM * Math.tan((angleDeg * DEG) / 2);
 }
 
+/** Largeur angulaire (deg) d'un objet de taille connue à distance connue.
+ *  L'inverse exact de angularSizeToPhysicalM. Sert à la calibration écran. */
+export function angularWidthDeg(sizeM, distanceM) {
+  if (distanceM <= 0) return 0;
+  return 2 * Math.atan(sizeM / (2 * distanceM)) * RAD;
+}
+
+/**
+ * Échelle écran issue d'une calibration : degrés par pixel écran.
+ * On encadre un objet de largeur angulaire connue entre deux curseurs
+ * séparés de `pixelSpan` px → deg/px. Auto-corrige le recadrage
+ * object-fit:cover : c'est l'angle réel par pixel AFFICHÉ, tout objectif
+ * et tout zoom confondus, il suffit de recalibrer par objectif.
+ */
+export function degPerScreenPx(angleDeg, pixelSpan) {
+  if (pixelSpan <= 0) return 0;
+  return angleDeg / pixelSpan;
+}
+
+/** Largeur angulaire (deg) d'un écart de `pixelSpan` px écran, une fois
+ *  l'échelle `degPerPx` calibrée. Mesure d'angle sans bouger le téléphone. */
+export function spanToAngleDeg(pixelSpan, degPerPx) {
+  return Math.abs(pixelSpan) * degPerPx;
+}
+
 /** Distance (m) d'un objet de taille connue vu sous un angle donné. */
 export function physicalSizeToDistanceM(sizeM, angleDeg) {
   const a = angleDeg * DEG;

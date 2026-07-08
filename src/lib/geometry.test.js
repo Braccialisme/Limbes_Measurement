@@ -6,6 +6,9 @@ import {
   hiddenHeightM,
   seaObjectEstimate,
   angularSizeToPhysicalM,
+  angularWidthDeg,
+  degPerScreenPx,
+  spanToAngleDeg,
   physicalSizeToDistanceM,
   heightFromElevationsM,
   angularSeparationDeg,
@@ -56,6 +59,15 @@ describe('angles ↔ tailles', () => {
   it('aller-retour cohérent', () => {
     const d = physicalSizeToDistanceM(18, 0.245);
     expect(angularSizeToPhysicalM(0.245, d)).toBeCloseTo(18, 6);
+  });
+  it('largeur angulaire : porte 2 m à 14.3 m ≈ 8°', () => {
+    expect(angularWidthDeg(2, 14.3)).toBeCloseTo(8.0, 1);
+  });
+  it('calibration écran ↔ mesure : aller-retour', () => {
+    const ang = angularWidthDeg(2, 14.3);      // ~8°
+    const scale = degPerScreenPx(ang, 240);    // objet sur 240 px
+    expect(spanToAngleDeg(240, scale)).toBeCloseTo(ang, 6);
+    expect(spanToAngleDeg(120, scale)).toBeCloseTo(ang / 2, 6);
   });
   it('château : 4200 m, base 1.0°, sommet 1.245° → ≈ 18 m', () => {
     expect(heightFromElevationsM(4200, 1.0, 1.245)).toBeCloseTo(18, 0);
