@@ -43,6 +43,22 @@ export function horizonDipDeg(eyeHeightM) {
 }
 
 /**
+ * Inverse du dip : hauteur d'œil (m) déduite de l'abaissement mesuré de
+ * l'horizon marin. h = R'·dip²/2 (dip en rad). C'est le sextant qui se
+ * mesure lui-même : viser l'horizontale vraie (gravité) puis l'horizon,
+ * l'écart de pitch donne le dip, on remonte à la hauteur.
+ *
+ * ATTENTION — n'est exploitable qu'en HAUTEUR : à 1.6 m le dip vaut ~0.04°,
+ * noyé sous le bruit du pitch. À 50 m il vaut ~0.22°, à 100 m ~0.31° :
+ * mesurable. Réservé au cas falaise/colline, pas à la plage.
+ */
+export function eyeHeightFromDipDeg(dipDeg) {
+  if (dipDeg <= 0) return 0;
+  const dipRad = dipDeg * DEG;
+  return (EARTH_R_EFF * dipRad * dipRad) / 2;
+}
+
+/**
  * Hauteur (m) cachée par la courbure pour un objet situé
  * `distanceKm` au-delà de TON horizon. ≈ 0.0675 · d² (réfraction incluse).
  * À 10 km derrière l'horizon : ~6.7 m de coque avalés.

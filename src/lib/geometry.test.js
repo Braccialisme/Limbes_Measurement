@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   horizonDistanceKm,
   horizonDipDeg,
+  eyeHeightFromDipDeg,
   hiddenHeightM,
   seaObjectEstimate,
   angularSizeToPhysicalM,
@@ -25,6 +26,13 @@ describe('horizon', () => {
   });
   it('10 km derrière l’horizon → ~6.8 m cachés', () => {
     expect(hiddenHeightM(10)).toBeCloseTo(6.8, 0);
+  });
+  it('dip ↔ hauteur : aller-retour cohérent (falaise 50 m)', () => {
+    const dip = horizonDipDeg(50);
+    expect(eyeHeightFromDipDeg(dip)).toBeCloseTo(50, 6);
+  });
+  it('dip mesuré 0.30° → hauteur d’œil ≈ 100 m', () => {
+    expect(eyeHeightFromDipDeg(0.30)).toBeCloseTo(100.4, 0);
   });
 });
 

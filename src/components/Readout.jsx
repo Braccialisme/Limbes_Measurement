@@ -11,6 +11,15 @@ const HEADING_LABEL = {
   none: '—',
 };
 
+// Hauteurs d'œil typiques (m). Le sol reste à ~0 en cas mer/plage ;
+// pour digue/dune, l'utilisateur ajuste au clavier. Presets = raccourcis.
+const EYE_PRESETS = [
+  { label: 'assis', m: 1.1 },
+  { label: 'debout', m: 1.6 },
+  { label: 'pont', m: 3 },
+  { label: 'dune', m: 10 },
+];
+
 export default function Readout({
   elevationDeg, rollDeg, headingDeg, headingSource,
   fix, eyeHeightM, onEyeHeight,
@@ -50,6 +59,19 @@ export default function Readout({
             value={eyeHeightM}
             onChange={(e) => onEyeHeight(Number(e.target.value) || 0)}
           />
+          <span className="presets">
+            {EYE_PRESETS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                className={`chip${Math.abs(eyeHeightM - p.m) < 0.01 ? ' active' : ''}`}
+                onClick={() => onEyeHeight(p.m)}
+                title={`${p.m} m`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </span>
         </div>
         <div className="cell">
           <span className="label">Horizon</span>

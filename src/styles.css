@@ -124,6 +124,29 @@ html, body, #root {
   padding: 3px 6px;
 }
 
+.presets {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1;
+  padding: 4px 6px;
+  background: transparent;
+  color: var(--ivory-dim);
+  border: 1px solid var(--ivory-dim);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.chip.active {
+  color: var(--brass);
+  border-color: var(--brass);
+}
+.chip:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
