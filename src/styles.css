@@ -1,0 +1,129 @@
+/* Limbe — instrument de visée.
+   Palette : laiton gravé sur acier bruni, lisible de nuit.
+   --steel  fond, presque noir, froid
+   --ivory  graduations et texte, blanc cassé d'échelle émaillée
+   --brass  laiton : le limbe, les accents
+   --signal rouge d'index : le seul élément vif, la lecture */
+:root {
+  --steel: #0b0d10;
+  --steel-2: #14171c;
+  --ivory: #e8e4da;
+  --ivory-dim: #9a968c;
+  --brass: #d8b23e;
+  --signal: #ff4b33;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body, #root {
+  height: 100%;
+  background: var(--steel);
+  color: var(--ivory);
+  font-family: var(--mono);
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---- porte d'entrée ---- */
+.gate {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+.gate-icon { width: 96px; height: 96px; }
+.gate h1 {
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ivory);
+}
+.tagline {
+  color: var(--brass);
+  letter-spacing: 0.12em;
+  font-size: 13px;
+}
+.gate-note {
+  color: var(--ivory-dim);
+  font-size: 11px;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* ---- boutons ---- */
+.btn {
+  font-family: var(--mono);
+  font-size: 14px;
+  background: var(--steel-2);
+  color: var(--ivory);
+  border: 1px solid var(--brass);
+  border-radius: 3px;
+  padding: 10px 18px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.btn:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.btn.primary { background: var(--brass); color: var(--steel); font-weight: 600; }
+.btn.ghost { border-color: var(--ivory-dim); color: var(--ivory-dim); padding: 10px 12px; }
+
+/* ---- instrument ---- */
+.instrument { position: fixed; inset: 0; overflow: hidden; }
+.liveview {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.reticle {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.cam-error {
+  position: absolute; top: 12px; left: 12px; right: 12px;
+  color: var(--signal); font-size: 12px;
+}
+
+/* ---- panneau de lecture ---- */
+.readout {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: color-mix(in srgb, var(--steel) 82%, transparent);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid var(--brass);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 8px;
+}
+.row { display: flex; gap: 12px; align-items: flex-end; }
+.row.measure { align-items: center; }
+.cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cell.grow { flex: 1; }
+.label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ivory-dim);
+}
+.value { font-size: 17px; color: var(--ivory); white-space: nowrap; }
+.row.primary .value:first-of-type { color: var(--brass); }
+.value.small { font-size: 11px; }
+.hint { font-size: 10px; color: var(--ivory-dim); line-height: 1.4; }
+.eye-input {
+  font-family: var(--mono);
+  font-size: 16px;
+  width: 64px;
+  background: var(--steel-2);
+  color: var(--ivory);
+  border: 1px solid var(--ivory-dim);
+  border-radius: 3px;
+  padding: 3px 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

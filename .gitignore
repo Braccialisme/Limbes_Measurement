@@ -1,0 +1,10 @@
+node_modules
+dist
+dev-dist
+.DS_Store
+*.local
+
+# Passation privée + config agent
+CLAUDE.md
+.claude/
+*.original.md
