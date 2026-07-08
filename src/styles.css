@@ -9,7 +9,7 @@
   --steel-2: #14171c;
   --ivory: #c7c8f5;
   --ivory-dim: #8788a6;
-  --brass: #3026d9;
+  --brass: #1e2f8f;
   --signal: #f04a00;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
@@ -71,7 +71,7 @@ html, body, #root {
   cursor: pointer;
 }
 .btn:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
-.btn.primary { background: var(--brass); color: var(--steel); font-weight: 600; }
+.btn.primary { background: var(--brass); color: var(--ivory); font-weight: 600; }
 .btn.ghost { border-color: var(--ivory-dim); color: var(--ivory-dim); padding: 10px 12px; }
 
 /* ---- instrument ---- */
@@ -186,7 +186,7 @@ html, body, #root {
   border: none;
   cursor: pointer;
 }
-.tab.active { background: var(--brass); color: var(--steel); font-weight: 600; }
+.tab.active { background: var(--brass); color: var(--ivory); font-weight: 600; }
 
 /* ---- journal ---- */
 .journal-list {
