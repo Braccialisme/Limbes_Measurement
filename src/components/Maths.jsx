@@ -70,8 +70,41 @@ export default function Maths({ eyeHeightM, cal }) {
   ];
 
   return (
-    <div className="panel maths">
-      <div className="panel-title">Maths — d’où sortent les chiffres</div>
+    <div className="maths-sheet">
+      <div className="panel-title">Limbe — mode d’emploi &amp; maths</div>
+
+      <div className="maths-intro">
+        <p>
+          <b>Limbe</b> = un sextant, un pélorus et une table d’almanach
+          numérisés. Le téléphone superpose un instrument de visée au flux
+          caméra pour mesurer des <b>angles</b>, puis en déduire distances et
+          tailles.
+        </p>
+        <p>
+          <b>Principe :</b> une caméra mesure toujours un ANGLE, jamais une
+          distance. Pour passer à des mètres il faut une contrainte externe :
+          la courbure de la Terre + ta hauteur d’œil (mer), un modèle de
+          terrain + GPS (château), ou une taille/distance connue (civil).
+        </p>
+        <p>
+          <b>Unités :</b> 1 degré (°) = 60 arcminutes (′) = 3600 arcsecondes
+          (″). Fin exprès : la pleine Lune fait ≈ 0.5° (30′) ; un doigt à bout
+          de bras ≈ 1.5°. Un bâtiment à 5 km sous 0.2° fait ≈ 17 m.
+        </p>
+        <p>
+          <b>Onglets :</b> <b>Visée</b> — élévation, azimut, séparation A→B en
+          deux taps. <b>Terre</b> — château via le relief (distance + hauteur).
+          <b>Civil</b> — largeur à l’écran (appart, rue). <b>Journal</b> — tes
+          mesures horodatées. <b>Maths</b> — ici.
+        </p>
+        <p className="hint">
+          Le plus fiable = l’élévation (accéléromètre, sub-degré). Le plus
+          faible = l’azimut (boussole). Distances déduites, pas mesurées : la
+          précision dépend de la contrainte externe.
+        </p>
+      </div>
+
+      <div className="panel-title">D’où sortent les chiffres</div>
       <div className="maths-list">
         {items.map((it) => (
           <div className="maths-item" key={it.title}>

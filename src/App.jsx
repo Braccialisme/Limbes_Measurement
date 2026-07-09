@@ -17,7 +17,7 @@ import Maths from './components/Maths.jsx';
 import Terre from './components/Terre.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09g · roll gravité + DEM';
+const BUILD = '2026-07-09h · maths pleine page + save auto';
 
 export default function App() {
   const orient = useOrientation();
@@ -57,23 +57,18 @@ export default function App() {
       azimuthDeg: orient.headingDeg ?? 0,
     };
     if (!markA) setMarkA(sight);
-    else if (!markB) setMarkB(sight);
-    else { setMarkA(sight); setMarkB(null); }
-  }, [orient.elevationDeg, orient.headingDeg, markA, markB]);
+    else if (!markB) {
+      setMarkB(sight);
+      // Sauvegarde AUTO à la complétion de la paire.
+      const sep = angularSeparationDeg(markA, sight);
+      journal.add({ kind: 'sep', label: 'séparation A→B', detail: formatDMS(sep) });
+    } else { setMarkA(sight); setMarkB(null); }
+  }, [orient.elevationDeg, orient.headingDeg, markA, markB, journal]);
 
   const clearMarks = useCallback(() => { setMarkA(null); setMarkB(null); }, []);
 
   const separationDeg =
     markA && markB ? angularSeparationDeg(markA, markB) : null;
-
-  const saveSeparation = useCallback(() => {
-    if (separationDeg == null) return;
-    journal.add({
-      kind: 'sep',
-      label: 'séparation A→B',
-      detail: formatDMS(separationDeg),
-    });
-  }, [separationDeg, journal]);
 
   if (!started) {
     return (
@@ -111,22 +106,21 @@ export default function App() {
       ) : (
         <>
           <div className="topbar">
-            <div className="tb-left">
-              {(tab === 'sight' || tab === 'civil' || tab === 'terre') && (
-                <LensControl
-                  devices={devices}
-                  deviceId={deviceId}
-                  onSelect={selectDevice}
-                  zoom={zoom}
-                  onZoom={setZoom}
-                />
-              )}
-            </div>
+            <div className="tb-left" />
             <Tabs tab={tab} onTab={setTab} />
             <button className="btn ghost topbtn" onClick={() => setCalOpen(true)}>
               FOV
             </button>
           </div>
+          {(tab === 'sight' || tab === 'civil' || tab === 'terre') && (
+            <LensControl
+              devices={devices}
+              deviceId={deviceId}
+              onSelect={selectDevice}
+              zoom={zoom}
+              onZoom={setZoom}
+            />
+          )}
 
           {tab === 'sight' && (
             <>
@@ -151,7 +145,6 @@ export default function App() {
                 separationDeg={separationDeg}
                 onMark={mark}
                 onClearMarks={clearMarks}
-                onSaveMeasure={saveSeparation}
                 build={BUILD}
               />
             </>
@@ -197,10 +190,7 @@ export default function App() {
           )}
 
           {tab === 'maths' && (
-            <>
-              <div className="sheet-bg" />
-              <Maths eyeHeightM={eyeHeightM} cal={cal} />
-            </>
+            <Maths eyeHeightM={eyeHeightM} cal={cal} />
           )}
         </>
       )}

@@ -35,23 +35,23 @@ export default function Terre({ fix, headingDeg, headingSource, elevationDeg, ey
     });
     setSummit(null);
     setBase(hit ? { ...hit, elevDeg: elevationDeg } : 'miss');
+    if (hit) { // sauvegarde AUTO
+      onSave({
+        kind: 'terre',
+        label: 'château — base (DEM)',
+        detail: `${(hit.distanceM / 1000).toFixed(2)} km · alt ${Math.round(hit.altM)} m`,
+      });
+    }
   };
 
   const aimSummit = () => {
     if (!base || base === 'miss' || elevationDeg == null) return;
     const h = heightFromElevationsM(base.distanceM, base.elevDeg, elevationDeg);
     setSummit({ elevDeg: elevationDeg, heightM: h });
-  };
-
-  const journalize = () => {
-    if (!base || base === 'miss') return;
-    const km = (base.distanceM / 1000).toFixed(2);
-    onSave({
+    onSave({ // sauvegarde AUTO
       kind: 'terre',
-      label: 'château (DEM)',
-      detail:
-        `${km} km · alt ${Math.round(base.altM)} m` +
-        (summit ? ` · haut ${summit.heightM.toFixed(1)} m` : ''),
+      label: 'château — hauteur',
+      detail: `${h.toFixed(1)} m @ ${(base.distanceM / 1000).toFixed(2)} km`,
     });
   };
 
@@ -117,7 +117,7 @@ export default function Terre({ fix, headingDeg, headingSource, elevationDeg, ey
           <div className="row measure">
             <button className="btn" onClick={aimBase}>Viser base</button>
             <button className="btn" disabled={!base || base === 'miss'} onClick={aimSummit}>Viser sommet</button>
-            <button className="btn ghost" disabled={!base || base === 'miss'} onClick={journalize}>＋</button>
+            <span className="hint">sauvegarde auto au journal</span>
           </div>
         </>
       )}
