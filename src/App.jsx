@@ -21,7 +21,7 @@ import Ciel from './components/Ciel.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09m · astro Soleil/Lune';
+const BUILD = '2026-07-09n · limbe adaptatif + calib balayage';
 
 export default function App() {
   const orient = useOrientation();
@@ -134,6 +134,7 @@ export default function App() {
         <Calibration
           current={cal}
           videoRef={videoRef}
+          headingRaw={orient.headingDeg}
           onSave={(c) => { saveCal(c); setCalOpen(false); }}
           onCancel={() => setCalOpen(false)}
         />

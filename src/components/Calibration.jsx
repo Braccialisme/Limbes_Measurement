@@ -13,7 +13,7 @@ import { angularWidthDeg, degPerScreenPx } from '../lib/geometry.js';
  * L'échelle deg/px est uniforme (cover scale identique en x et y), donc elle
  * vaut aussi pour la verticale (réticule).
  */
-export default function Calibration({ onSave, onCancel, current, videoRef }) {
+export default function Calibration({ onSave, onCancel, current, videoRef, headingRaw }) {
   const W = window.innerWidth, H = window.innerHeight;
   const v = videoRef?.current;
   const vw = v?.videoWidth || 0, vh = v?.videoHeight || 0;
@@ -24,6 +24,16 @@ export default function Calibration({ onSave, onCancel, current, videoRef }) {
   const [sizeM, setSizeM] = useState('');
   const [distM, setDistM] = useState('');
   const [spanPx, setSpanPx] = useState(0);
+
+  // Voie 3 : balayage IMU (sans objet connu).
+  const [hA, setHA] = useState(null);
+  const [panDeg, setPanDeg] = useState(null);
+  const markPanA = () => { setPanDeg(null); setHA(headingRaw); };
+  const markPanB = () => {
+    if (hA == null || headingRaw == null || spanPx <= 4) return;
+    setPanDeg(Math.abs(((headingRaw - hA + 540) % 360) - 180));
+  };
+  const degPerPxPan = panDeg != null && spanPx > 4 ? panDeg / spanPx : null;
 
   // Voie 1 : FOV capteur direct → deg/px tenant compte du cover.
   const fovD = Number(fovDirect);
@@ -103,9 +113,34 @@ export default function Calibration({ onSave, onCancel, current, videoRef }) {
             {implausible ? ' — improbable, objet/distance douteux' : ''}
           </p>
         )}
+        {/* Voie 3 — balayage IMU, sans objet connu */}
+        <p className="hint" style={{ marginTop: 6 }}>
+          Ou balayage (capteurs, sans objet) : vise un repère LOINTAIN, mets-le
+          sous le curseur A → tape, tourne le tél pour l'amener sous B → tape.
+        </p>
+        <div className="row measure">
+          <button className="btn" onClick={markPanA}>Repère sous A</button>
+          <button className="btn" disabled={hA == null} onClick={markPanB}>puis sous B</button>
+          {degPerPxPan && (
+            <button className="btn primary"
+              onClick={() => onSave({ degPerPx: degPerPxPan, refDeg: panDeg, refPx: spanPx, mode: 'balayage' })}>
+              Enreg. balayage
+            </button>
+          )}
+        </div>
+        {degPerPxPan && (
+          <p className="hint ok">
+            balayage {panDeg.toFixed(1)}° sur {Math.round(spanPx)} px → FOV capteur
+            ≈ {(degPerPxPan * dispVideoW).toFixed(0)}°
+          </p>
+        )}
+        {hA != null && panDeg == null && (
+          <p className="hint">repère A posé — amène-le sous B et tape.</p>
+        )}
+
         {current && (
           <p className="hint">
-            actuel : FOV ≈ {curFov?.toFixed(0)}° ({current.mode === 'direct' ? 'direct' : 'référence'})
+            actuel : FOV ≈ {curFov?.toFixed(0)}° ({current.mode || 'référence'})
           </p>
         )}
 

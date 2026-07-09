@@ -18,13 +18,20 @@ export default function Reticle({ elevationDeg, rollDeg, markA, markB, cal }) {
 
   const ticks = [];
   if (elevationDeg != null) {
-    const base = Math.round(elevationDeg * 2) / 2; // arrondi au demi-degré
-    for (let t = base - 8; t <= base + 8; t += 0.5) {
+    // Pas ADAPTATIF : on choisit le plus petit pas dont l'espacement à l'écran
+    // reste lisible (≥ 6 unités viewBox entre traits étiquetés). Évite le
+    // tassement quand l'échelle réelle serre le limbe.
+    const CANDS = [0.25, 0.5, 1, 2, 5, 10, 15, 30, 45];
+    const step = CANDS.find((s) => s * pxPerDeg >= 6) ?? 45;
+    const half = 46 / pxPerDeg;                 // degrés du centre au bord du limbe
+    const minorStep = step / 2;
+    const start = Math.ceil((elevationDeg - half) / minorStep) * minorStep;
+    for (let t = start; t <= elevationDeg + half; t += minorStep) {
       const y = cy + (elevationDeg - t) * pxPerDeg;
       if (y < 4 || y > H - 4) continue;
-      const major = Math.abs(t - Math.round(t)) < 1e-9;
+      const major = Math.abs(t / step - Math.round(t / step)) < 1e-6;
       ticks.push(
-        <g key={t}>
+        <g key={t.toFixed(3)}>
           <line
             x1={major ? 88 : 91} y1={y} x2={94} y2={y}
             stroke="var(--brass)" strokeWidth={major ? 0.5 : 0.25}
@@ -32,7 +39,7 @@ export default function Reticle({ elevationDeg, rollDeg, markA, markB, cal }) {
           {major && (
             <text x={87} y={y + 1.2} textAnchor="end" fontSize="2.6"
               fill="var(--brass)" fontFamily="var(--mono)">
-              {Math.round(t)}°
+              {Number.isInteger(step) ? Math.round(t) : t.toFixed(1)}°
             </text>
           )}
         </g>
