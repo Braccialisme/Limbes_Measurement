@@ -1,6 +1,14 @@
-import { useState, useEffect } from 'react';
-import { skyPositions } from '../lib/astro.js';
-import { formatDMS } from '../lib/geometry.js';
+import { useState, useEffect, useMemo } from 'react';
+import { skyPositions, moonPhase, riseSetTransit } from '../lib/astro.js';
+
+const fmt = (d) => (d ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—');
+function phaseName(illum, waxing) {
+  if (illum < 0.04) return 'nouvelle';
+  if (illum > 0.96) return 'pleine';
+  if (illum < 0.46) return waxing ? 'premier croissant' : 'dernier croissant';
+  if (illum > 0.54) return waxing ? 'gibbeuse croissante' : 'gibbeuse décroissante';
+  return waxing ? 'premier quartier' : 'dernier quartier';
+}
 
 /**
  * Mode Ciel — éphémérides Soleil & Lune. Position apparente (alt/az),
@@ -53,6 +61,15 @@ export default function Ciel({ fix, headingDeg, elevationDeg }) {
 
   const sky = skyPositions(new Date(), fix.lat, fix.lon);
 
+  // Almanach du jour : ne change qu'une fois/jour → mémoïsé (le ray-scan
+  // 24 h est lourd, inutile de le refaire à chaque frame d'orientation).
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const alm = useMemo(() => ({
+    phase: moonPhase(new Date()),
+    sun: riseSetTransit('sun', new Date(), fix.lat, fix.lon),
+    moon: riseSetTransit('moon', new Date(), fix.lat, fix.lon),
+  }), [dayKey, fix.lat, fix.lon]);
+
   return (
     <div className="panel">
       <div className="panel-title">Ciel — Soleil &amp; Lune</div>
@@ -60,12 +77,19 @@ export default function Ciel({ fix, headingDeg, elevationDeg }) {
         <div className="cell"><span className="label">Soleil</span><span className="value">☉</span></div>
         <Finder body={sky.sun} headingDeg={headingDeg} elevationDeg={elevationDeg} />
       </div>
+      <span className="hint">
+        lever {fmt(alm.sun.rise)} · culmin {fmt(alm.sun.transit)} ({alm.sun.maxAltDeg.toFixed(0)}°) · coucher {fmt(alm.sun.set)}
+      </span>
       <div className="row">
         <div className="cell"><span className="label">Lune</span><span className="value">☾</span></div>
         <Finder body={sky.moon} headingDeg={headingDeg} elevationDeg={elevationDeg} />
       </div>
       <span className="hint">
-        Diamètre attendu à comparer à ta mesure A→B. Lune {(sky.moon.diamDeg * 60).toFixed(1)}′,
+        {phaseName(alm.phase.illum, alm.phase.waxing)} · {(alm.phase.illum * 100).toFixed(0)}% éclairée
+        {alm.phase.waxing ? ' ↑' : ' ↓'} · lever {fmt(alm.moon.rise)} · coucher {fmt(alm.moon.set)}
+      </span>
+      <span className="hint">
+        Diamètre attendu (à comparer à ta mesure A→B) : Lune {(sky.moon.diamDeg * 60).toFixed(1)}′,
         Soleil {(sky.sun.diamDeg * 60).toFixed(1)}′.
       </span>
     </div>

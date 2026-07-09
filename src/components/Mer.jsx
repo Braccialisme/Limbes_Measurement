@@ -12,7 +12,7 @@ import { spanToAngleDeg, seaObjectEstimate, horizonDistanceKm } from '../lib/geo
  *     chalutier »).
  * La hauteur d'œil (mémorisée) donne l'horizon.
  */
-export default function Mer({ cal, eyeHeightM, onCalibrate, onSave }) {
+export default function Mer({ cal, eyeHeightM, onCalibrate, onSave, videoRef }) {
   const [spanPx, setSpanPx] = useState(0);
   const [waterline, setWaterline] = useState(true);
 
@@ -45,7 +45,7 @@ export default function Mer({ cal, eyeHeightM, onCalibrate, onSave }) {
 
   return (
     <>
-      <MeasureCursors onSpan={setSpanPx} />
+      <MeasureCursors onSpan={setSpanPx} videoRef={videoRef} />
       <div className="panel">
         <div className="panel-title">Mer — objet trop gros ?</div>
         <div className="row">

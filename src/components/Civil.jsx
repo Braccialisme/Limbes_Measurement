@@ -14,7 +14,7 @@ import {
  *   - distance connue → taille de l'objet.
  * Nécessite un objectif calibré (échelle deg/px).
  */
-export default function Civil({ cal, onCalibrate, onSave }) {
+export default function Civil({ cal, onCalibrate, onSave, videoRef }) {
   const [spanPx, setSpanPx] = useState(0);
   const [mode, setMode] = useState('size'); // 'size' = taille connue | 'distance' connue
   const [val, setVal] = useState('');
@@ -49,7 +49,7 @@ export default function Civil({ cal, onCalibrate, onSave }) {
 
   return (
     <>
-      <MeasureCursors onSpan={setSpanPx} />
+      <MeasureCursors onSpan={setSpanPx} videoRef={videoRef} />
       <div className="panel">
         <div className="panel-title">Civil — largeur à l'écran</div>
         <div className="row">

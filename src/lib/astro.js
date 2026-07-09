@@ -134,6 +134,48 @@ export function equatorialToHorizontal(ra, dec, latDeg, lonDeg, d, sun) {
   return { altDeg: alt, azDeg: az };
 }
 
+/** Phase de la Lune : fraction éclairée (0=nouvelle, 1=pleine) + croissante ? */
+export function moonPhase(date) {
+  const d = dayNumber(date);
+  const sun = sunEquatorial(d);
+  const moon = moonEquatorial(d, sun);
+  // Élongation Soleil–Lune (séparation équatoriale).
+  const cosSep = sin(sun.dec) * sin(moon.dec)
+    + cos(sun.dec) * cos(moon.dec) * cos(sun.ra - moon.ra);
+  const sep = Math.acos(Math.max(-1, Math.min(1, cosSep))) * R2D;
+  const illum = (1 - Math.cos(sep * D2R)) / 2;
+  const waxing = ((moon.ra - sun.ra + 360) % 360) < 180;
+  return { illum, waxing, elongationDeg: sep };
+}
+
+/** Altitude (deg) d'un astre ('sun'|'moon') à un instant. */
+export function altitudeAt(body, date, latDeg, lonDeg) {
+  const s = skyPositions(date, latDeg, lonDeg);
+  return body === 'sun' ? s.sun.altDeg : s.moon.altDeg;
+}
+
+/**
+ * Lever / coucher / culmination d'un astre sur la journée UTC de `date`.
+ * Balaye 24 h par pas de 10 min, détecte les passages de l'altitude par 0 et
+ * le maximum (transit). Robuste et pur. Renvoie des Date (UTC) ou null.
+ */
+export function riseSetTransit(body, date, latDeg, lonDeg) {
+  const day0 = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const step = 10 * 60000;
+  let prevAlt = null, prevT = null, rise = null, set = null, transit = null, maxAlt = -Infinity;
+  const interp = (t0, a0, t1, a1) => new Date(t0 + (t1 - t0) * (-a0 / (a1 - a0)));
+  for (let t = day0; t <= day0 + 86400000; t += step) {
+    const alt = altitudeAt(body, new Date(t), latDeg, lonDeg);
+    if (alt > maxAlt) { maxAlt = alt; transit = new Date(t); }
+    if (prevAlt != null) {
+      if (prevAlt < 0 && alt >= 0 && !rise) rise = interp(prevT, prevAlt, t, alt);
+      if (prevAlt >= 0 && alt < 0 && !set) set = interp(prevT, prevAlt, t, alt);
+    }
+    prevAlt = alt; prevT = t;
+  }
+  return { rise, set, transit, maxAltDeg: maxAlt };
+}
+
 /** Tout-en-un : positions apparentes du Soleil et de la Lune. */
 export function skyPositions(date, latDeg, lonDeg) {
   const d = dayNumber(date);

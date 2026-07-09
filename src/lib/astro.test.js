@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { dayNumber, sunEquatorial, moonEquatorial, skyPositions } from './astro.js';
+import {
+  dayNumber, sunEquatorial, moonEquatorial, skyPositions,
+  moonPhase, riseSetTransit,
+} from './astro.js';
 
 describe('Soleil', () => {
   it('déclinaison ≈ 0 à l’équinoxe de mars', () => {
@@ -35,6 +38,24 @@ describe('Lune', () => {
     const m = moonEquatorial(d, sunEquatorial(d));
     expect(m.diamDeg).toBeGreaterThan(0.48);
     expect(m.diamDeg).toBeLessThan(0.57);
+  });
+});
+
+describe('almanach', () => {
+  it('nouvelle lune (2024-01-11) → fraction éclairée ~0', () => {
+    const { illum } = moonPhase(new Date(Date.UTC(2024, 0, 11, 12, 0)));
+    expect(illum).toBeLessThan(0.06);
+  });
+  it('pleine lune (2024-01-25) → fraction éclairée ~1', () => {
+    const { illum } = moonPhase(new Date(Date.UTC(2024, 0, 25, 18, 0)));
+    expect(illum).toBeGreaterThan(0.94);
+  });
+  it('Soleil : lever avant coucher, culmination haute (Paris, été)', () => {
+    const r = riseSetTransit('sun', new Date(Date.UTC(2024, 5, 21)), 48.85, 2.35);
+    expect(r.rise).not.toBeNull();
+    expect(r.set).not.toBeNull();
+    expect(r.rise.getTime()).toBeLessThan(r.set.getTime());
+    expect(r.maxAltDeg).toBeGreaterThan(60);
   });
 });
 

@@ -55,7 +55,7 @@ export default function Calibration({ onSave, onCancel, current, videoRef, headi
 
   return (
     <>
-      <MeasureCursors onSpan={setSpanPx} />
+      <MeasureCursors onSpan={setSpanPx} videoRef={videoRef} />
       <div className="panel cal-panel">
         <div className="panel-title">Calibration du FOV</div>
         {!coverScale && (
