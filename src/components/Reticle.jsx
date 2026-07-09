@@ -6,10 +6,15 @@
  *   l'élévation — la signature de l'instrument. Graduation : 1° majeur,
  *   0.5° mineur, sur une fenêtre de ±8°.
  */
-export default function Reticle({ elevationDeg, rollDeg, markA, markB }) {
+export default function Reticle({ elevationDeg, rollDeg, markA, markB, cal }) {
   const W = 100, H = 100; // viewBox %, l'overlay est en position absolue plein écran
   const cx = W / 2, cy = H / 2;
-  const pxPerDeg = 6; // échelle du limbe (unités viewBox par degré)
+  // Échelle du limbe : si l'objectif est calibré, on grade en DEGRÉS RÉELS.
+  // deg/px écran → unités viewBox/degré : (1/degPerPx)·(100/hauteurÉcran).
+  // Le SVG est preserveAspectRatio=none : 1 unité viewBox Y = H_écran/100 px.
+  const pxPerDeg = cal
+    ? (1 / cal.degPerPx) * (100 / window.innerHeight)
+    : 6; // défaut visuel tant que non calibré
 
   const ticks = [];
   if (elevationDeg != null) {

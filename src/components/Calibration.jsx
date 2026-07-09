@@ -3,26 +3,32 @@ import MeasureCursors from './MeasureCursors.jsx';
 import { angularWidthDeg, degPerScreenPx } from '../lib/geometry.js';
 
 /**
- * Calibration du FOV — deux voies :
- *  1. FOV DIRECT : tu tapes le champ de vision horizontal de l'objectif
- *     (documenté pour la plupart des tél, ~65-70° pour le principal). Le plus
- *     FIABLE — aucune erreur de curseur. deg/px = FOV / largeur écran.
- *  2. Par RÉFÉRENCE : encadrer un objet de taille+distance connues entre deux
- *     curseurs. Pratique mais sensible : objet large, loin, mesuré au mètre.
- * Un garde-fou signale un FOV improbable (hors ~40-90°).
+ * Calibration du FOV — CONSCIENTE DU RECADRAGE object-fit:cover.
+ *
+ * Le liveview est en cover : la vidéo est mise à l'échelle (facteur uniforme
+ * = max) puis rognée. Le champ AFFICHÉ à l'écran ≠ champ CAPTEUR. On calcule
+ * la largeur écran qu'occuperait la vidéo ENTIÈRE (dispVideoW) ; alors :
+ *   - FOV capteur F connu → deg/px = F / dispVideoW  (exact malgré le rognage)
+ *   - référence (curseurs) → deg/px = angle / span_px  (mesure directe, exacte)
+ * L'échelle deg/px est uniforme (cover scale identique en x et y), donc elle
+ * vaut aussi pour la verticale (réticule).
  */
-const FOV_MIN = 40, FOV_MAX = 90; // plage plausible d'un objectif de tél
+export default function Calibration({ onSave, onCancel, current, videoRef }) {
+  const W = window.innerWidth, H = window.innerHeight;
+  const v = videoRef?.current;
+  const vw = v?.videoWidth || 0, vh = v?.videoHeight || 0;
+  const coverScale = vw && vh ? Math.max(W / vw, H / vh) : null;
+  const dispVideoW = coverScale ? vw * coverScale : W; // largeur écran de la vidéo entière
 
-export default function Calibration({ onSave, onCancel, current }) {
-  const W = window.innerWidth;
   const [fovDirect, setFovDirect] = useState('');
   const [sizeM, setSizeM] = useState('');
   const [distM, setDistM] = useState('');
   const [spanPx, setSpanPx] = useState(0);
 
-  // Voie 1 : FOV direct.
+  // Voie 1 : FOV capteur direct → deg/px tenant compte du cover.
   const fovD = Number(fovDirect);
   const directOk = fovD >= 20 && fovD <= 150;
+  const degPerPxDirect = fovD / dispVideoW;
 
   // Voie 2 : référence.
   const angle =
@@ -31,29 +37,37 @@ export default function Calibration({ onSave, onCancel, current }) {
       : null;
   const refReady = angle != null && spanPx > 4;
   const degPerPxRef = refReady ? degPerScreenPx(angle, spanPx) : null;
-  const hfovRef = degPerPxRef != null ? degPerPxRef * W : null;
-  const implausible = hfovRef != null && (hfovRef < FOV_MIN || hfovRef > FOV_MAX);
+  // Champ capteur implicite = deg/px × largeur vidéo entière (garde-fou).
+  const impliedFov = degPerPxRef != null ? degPerPxRef * dispVideoW : null;
+  const implausible = impliedFov != null && (impliedFov < 40 || impliedFov > 130);
+
+  const curFov = current ? current.degPerPx * dispVideoW : null;
 
   return (
     <>
       <MeasureCursors onSpan={setSpanPx} />
       <div className="panel cal-panel">
         <div className="panel-title">Calibration du FOV</div>
+        {!coverScale && (
+          <p className="hint" style={{ color: 'var(--signal)' }}>
+            dimensions vidéo inconnues — attends l'image caméra.
+          </p>
+        )}
 
-        {/* Voie 1 — FOV direct */}
+        {/* Voie 1 — FOV capteur direct */}
         <p className="hint">
-          Le plus fiable : saisis le champ de vision horizontal de l'objectif
-          (cherche « {'{'}ton tél{'}'} camera FOV » — souvent 65-70°).
+          Le plus fiable : le champ horizontal de l'objectif (spec constructeur,
+          souvent 65-70° pour le principal). Le recadrage est géré.
         </p>
         <div className="row">
           <label className="cell">
-            <span className="label">FOV direct (°)</span>
+            <span className="label">FOV capteur (°)</span>
             <input className="eye-input" type="number" inputMode="decimal"
               min="20" max="150" step="0.5" value={fovDirect}
               onChange={(e) => setFovDirect(e.target.value)} />
           </label>
           <button className="btn primary" disabled={!directOk}
-            onClick={() => onSave({ degPerPx: fovD / W, refDeg: fovD, refPx: W, mode: 'direct' })}>
+            onClick={() => onSave({ degPerPx: degPerPxDirect, refDeg: fovD, refPx: dispVideoW, mode: 'direct' })}>
             Enregistrer FOV
           </button>
         </div>
@@ -84,15 +98,14 @@ export default function Calibration({ onSave, onCancel, current }) {
         {refReady && (
           <p className={`hint ${implausible ? '' : 'ok'}`}
             style={implausible ? { color: 'var(--signal)' } : undefined}>
-            largeur {angle.toFixed(2)}° sur {Math.round(spanPx)} px → FOV écran
-            ≈ {hfovRef.toFixed(0)}°
-            {implausible ? ' — improbable ! objet/distance douteux, recommence' : ''}
+            {angle.toFixed(2)}° sur {Math.round(spanPx)} px → FOV capteur
+            ≈ {impliedFov.toFixed(0)}°
+            {implausible ? ' — improbable, objet/distance douteux' : ''}
           </p>
         )}
         {current && (
           <p className="hint">
-            actuel : FOV ≈ {(current.degPerPx * W).toFixed(0)}°
-            {current.mode === 'direct' ? ' (direct)' : ' (référence)'}
+            actuel : FOV ≈ {curFov?.toFixed(0)}° ({current.mode === 'direct' ? 'direct' : 'référence'})
           </p>
         )}
 

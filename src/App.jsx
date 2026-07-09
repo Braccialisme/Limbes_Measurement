@@ -20,7 +20,7 @@ import Mer from './components/Mer.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09k · DEM bilinéaire + nuit rouge';
+const BUILD = '2026-07-09l · calibration cover + réticule réel';
 
 export default function App() {
   const orient = useOrientation();
@@ -132,6 +132,7 @@ export default function App() {
       {calOpen ? (
         <Calibration
           current={cal}
+          videoRef={videoRef}
           onSave={(c) => { saveCal(c); setCalOpen(false); }}
           onCancel={() => setCalOpen(false)}
         />
@@ -161,6 +162,7 @@ export default function App() {
                 rollDeg={orient.rollDeg}
                 markA={markA}
                 markB={markB}
+                cal={cal}
               />
               <Readout
                 elevationDeg={orient.elevationDeg}
@@ -189,6 +191,7 @@ export default function App() {
                 rollDeg={orient.rollDeg}
                 markA={markA}
                 markB={markB}
+                cal={cal}
               />
               <Terre
                 fix={fix}
