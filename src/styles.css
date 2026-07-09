@@ -34,14 +34,14 @@
   --brass: #a3341c;
   --signal: #ff4b33;
 }
-/* voile rouge multiplié sur le liveview → caméra red-shiftée */
-.night-veil {
-  position: absolute; inset: 0;
-  background: #ff0000;
-  mix-blend-mode: multiply;
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: 1;
+/* Nuit : on red-shift la CAMÉRA via un filtre (pas de voile plein écran),
+   le reste de la page reste noir → la barre du navigateur (Safari) ne vire
+   pas au rouge. */
+:root.night .liveview {
+  filter: grayscale(1) brightness(0.75) sepia(1) hue-rotate(-32deg) saturate(6);
+}
+:root.night .freeze-canvas {
+  filter: grayscale(1) brightness(0.75) sepia(1) hue-rotate(-32deg) saturate(6);
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -67,6 +67,7 @@ html, body, #root {
   padding: 24px;
   text-align: center;
 }
+.gate-logo { width: 128px; height: 128px; object-fit: contain; margin-bottom: 4px; }
 .gate-icon { width: 96px; height: 96px; }
 .gate h1 {
   font-size: 34px;

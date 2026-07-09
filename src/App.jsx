@@ -20,10 +20,11 @@ import Terre from './components/Terre.jsx';
 import Mer from './components/Mer.jsx';
 import Ciel from './components/Ciel.jsx';
 import Pelorus from './components/Pelorus.jsx';
+import Guide from './components/Guide.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09q · calibration étoiles';
+const BUILD = '2026-07-10 · guide + logo + nuit Safari';
 
 export default function App() {
   const orient = useOrientation();
@@ -108,6 +109,7 @@ export default function App() {
   if (!started) {
     return (
       <div className="gate">
+        <img src="/logo.png" alt="" className="gate-logo" />
         <svg viewBox="0 0 100 100" className="gate-icon" aria-hidden="true">
           <path d="M 15 70 A 40 40 0 0 1 85 70" fill="none" stroke="var(--brass)" strokeWidth="2.5" />
           <line x1="50" y1="70" x2="50" y2="34" stroke="var(--ivory)" strokeWidth="1.6" />
@@ -130,7 +132,6 @@ export default function App() {
   return (
     <div className="instrument">
       <video ref={videoRef} autoPlay playsInline muted className="liveview" />
-      {night && <div className="night-veil" />}
       {camError && <div className="cam-error">caméra : {camError}</div>}
 
       {calOpen ? (
@@ -150,7 +151,7 @@ export default function App() {
               FOV
             </button>
           </div>
-          {tab !== 'journal' && tab !== 'maths' && (
+          {tab !== 'journal' && tab !== 'maths' && tab !== 'guide' && (
             <LensControl
               devices={devices}
               deviceId={deviceId}
@@ -270,6 +271,8 @@ export default function App() {
               />
             </>
           )}
+
+          {tab === 'guide' && <Guide />}
 
           {tab === 'maths' && (
             <Maths eyeHeightM={eyeHeightM} cal={cal} night={night} onToggleNight={() => setNight((n) => !n)} />

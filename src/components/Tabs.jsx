@@ -7,6 +7,7 @@ const TABS = [
   ['pelorus', 'Pélorus'],
   ['civil', 'Civil'],
   ['journal', 'Journal'],
+  ['guide', 'Guide'],
   ['maths', 'Maths'],
 ];
 
