@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import MeasureCursors from './MeasureCursors.jsx';
 import { angularWidthDeg, degPerScreenPx } from '../lib/geometry.js';
+import { STARS, starSeparationDeg } from '../lib/stars.js';
 
 /**
  * Calibration du FOV — CONSCIENTE DU RECADRAGE object-fit:cover.
@@ -34,6 +35,12 @@ export default function Calibration({ onSave, onCancel, current, videoRef, headi
     setPanDeg(Math.abs(((headingRaw - hA + 540) % 360) - 180));
   };
   const degPerPxPan = panDeg != null && spanPx > 4 ? panDeg / spanPx : null;
+
+  // Voie 4 : étoiles (séparation catalogue connue).
+  const [s1, setS1] = useState(3); // Bételgeuse
+  const [s2, setS2] = useState(2); // Rigel
+  const starSep = starSeparationDeg(STARS[s1], STARS[s2]);
+  const degPerPxStar = spanPx > 4 && s1 !== s2 ? starSep / spanPx : null;
 
   // Voie 1 : FOV capteur direct → deg/px tenant compte du cover.
   const fovD = Number(fovDirect);
@@ -136,6 +143,34 @@ export default function Calibration({ onSave, onCancel, current, videoRef, headi
         )}
         {hA != null && panDeg == null && (
           <p className="hint">repère A posé — amène-le sous B et tape.</p>
+        )}
+
+        {/* Voie 4 — étoiles (nuit) */}
+        <p className="hint" style={{ marginTop: 6 }}>
+          Ou par étoiles (nuit) : choisis 2 étoiles, gèle l'image, pose un
+          curseur sur chacune. Le plus précis.
+        </p>
+        <div className="row">
+          <select className="eye-input" style={{ width: 'auto' }} value={s1}
+            onChange={(e) => setS1(Number(e.target.value))}>
+            {STARS.map((s, i) => <option key={s.name} value={i}>{s.name}</option>)}
+          </select>
+          <select className="eye-input" style={{ width: 'auto' }} value={s2}
+            onChange={(e) => setS2(Number(e.target.value))}>
+            {STARS.map((s, i) => <option key={s.name} value={i}>{s.name}</option>)}
+          </select>
+          {degPerPxStar && (
+            <button className="btn primary"
+              onClick={() => onSave({ degPerPx: degPerPxStar, refDeg: starSep, refPx: spanPx, mode: 'étoiles' })}>
+              Enreg. étoiles
+            </button>
+          )}
+        </div>
+        {degPerPxStar && (
+          <p className="hint ok">
+            {STARS[s1].name}–{STARS[s2].name} {starSep.toFixed(2)}° sur {Math.round(spanPx)} px
+            → FOV capteur ≈ {(degPerPxStar * dispVideoW).toFixed(0)}°
+          </p>
         )}
 
         {current && (

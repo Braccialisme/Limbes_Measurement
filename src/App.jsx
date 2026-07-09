@@ -23,7 +23,7 @@ import Pelorus from './components/Pelorus.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09p · pélorus / waypoints';
+const BUILD = '2026-07-09q · calibration étoiles';
 
 export default function App() {
   const orient = useOrientation();
