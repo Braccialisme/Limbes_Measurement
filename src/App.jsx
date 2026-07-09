@@ -16,10 +16,11 @@ import Civil from './components/Civil.jsx';
 import Journal from './components/Journal.jsx';
 import Maths from './components/Maths.jsx';
 import Terre from './components/Terre.jsx';
+import Mer from './components/Mer.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09i · silhouette + DEM z13';
+const BUILD = '2026-07-09j · FOV direct + mode mer';
 
 export default function App() {
   const orient = useOrientation();
@@ -135,7 +136,7 @@ export default function App() {
               FOV
             </button>
           </div>
-          {(tab === 'sight' || tab === 'civil' || tab === 'terre') && (
+          {(tab === 'sight' || tab === 'civil' || tab === 'terre' || tab === 'mer') && (
             <LensControl
               devices={devices}
               deviceId={deviceId}
@@ -192,6 +193,15 @@ export default function App() {
                 onRecalibrate={openSilhouette}
               />
             </>
+          )}
+
+          {tab === 'mer' && (
+            <Mer
+              cal={cal}
+              eyeHeightM={eyeHeightM}
+              onCalibrate={() => setCalOpen(true)}
+              onSave={journal.add}
+            />
           )}
 
           {tab === 'civil' && (

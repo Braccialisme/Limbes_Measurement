@@ -1,7 +1,8 @@
-/** Barre d'onglets en haut : Visée / Terre / Civil / Journal / Maths. */
+/** Barre d'onglets : Visée / Terre / Mer / Civil / Journal / Maths. */
 const TABS = [
   ['sight', 'Visée'],
   ['terre', 'Terre'],
+  ['mer', 'Mer'],
   ['civil', 'Civil'],
   ['journal', 'Journal'],
   ['maths', 'Maths'],
