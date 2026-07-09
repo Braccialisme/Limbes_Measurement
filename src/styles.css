@@ -123,6 +123,7 @@ html, body, #root {
   touch-action: none;
 }
 .silhouette-svg { position: absolute; inset: 0; }
+.sky-overlay { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 
 /* fond noir opaque pour les onglets sans caméra (Maths, Journal) */
 .sheet-bg { position: absolute; inset: 0; background: var(--steel); z-index: 5; }

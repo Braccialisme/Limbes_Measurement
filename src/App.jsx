@@ -21,10 +21,11 @@ import Mer from './components/Mer.jsx';
 import Ciel from './components/Ciel.jsx';
 import Pelorus from './components/Pelorus.jsx';
 import Guide from './components/Guide.jsx';
+import SkyOverlay from './components/SkyOverlay.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-10b · mer distance+hauteur (dépression)';
+const BUILD = '2026-07-10c · overlay ciel + export journal';
 
 export default function App() {
   const orient = useOrientation();
@@ -39,7 +40,8 @@ export default function App() {
   const journal = useJournal();
   const dem = useDem();
   const waypoints = useWaypoints();
-  const [tab, setTab] = useState('sight'); // 'sight' | 'civil' | 'journal'
+  const [tab, setTab] = useState(() => localStorage.getItem('limbe.tab') || 'sight');
+  useEffect(() => { try { localStorage.setItem('limbe.tab', tab); } catch { /* quota */ } }, [tab]);
   const [calOpen, setCalOpen] = useState(false);
   // Hauteur d'œil mémorisée une fois (localStorage) — plus fiable qu'un auto.
   const [eyeHeightM, setEyeHeightM] = useState(() => {
@@ -239,6 +241,12 @@ export default function App() {
                 rollDeg={orient.rollDeg}
                 markA={markA}
                 markB={markB}
+                cal={cal}
+              />
+              <SkyOverlay
+                fix={fix}
+                headingDeg={headingCorrected}
+                elevationDeg={orient.elevationDeg}
                 cal={cal}
               />
               <Ciel
