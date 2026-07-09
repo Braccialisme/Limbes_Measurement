@@ -1,4 +1,5 @@
-import { skyPositions } from '../lib/astro.js';
+import { skyPositions, dayNumber, sunEquatorial, equatorialToHorizontal } from '../lib/astro.js';
+import { STARS } from '../lib/stars.js';
 
 /**
  * Superpose au liveview la position ATTENDUE du Soleil et de la Lune : un
@@ -28,13 +29,40 @@ function Body({ body, glyph, headingDeg, elevationDeg, degPerPx, W, H }) {
   );
 }
 
+function Star({ star, headingDeg, elevationDeg, degPerPx, W, H }) {
+  if (star.altDeg < 0 || headingDeg == null || elevationDeg == null) return null;
+  const pxPerDeg = 1 / degPerPx;
+  const dx = angDiff(star.azDeg, headingDeg);
+  const x = W / 2 + dx * pxPerDeg;
+  const y = H / 2 - (star.altDeg - elevationDeg) * pxPerDeg;
+  if (x < 0 || x > W || y < 0 || y > H) return null;
+  return (
+    <g>
+      <circle cx={x} cy={y} r="1.6" fill="var(--ivory)" />
+      <text x={x + 5} y={y + 3} fill="var(--ivory)" fontFamily="var(--mono)" fontSize="10" opacity="0.85">{star.name}</text>
+    </g>
+  );
+}
+
 export default function SkyOverlay({ fix, headingDeg, elevationDeg, cal }) {
   if (!fix) return null;
   const W = window.innerWidth, H = window.innerHeight;
   const degPerPx = cal ? cal.degPerPx : DEFAULT_FOV / W;
-  const sky = skyPositions(new Date(), fix.lat, fix.lon);
+  const now = new Date();
+  const sky = skyPositions(now, fix.lat, fix.lon);
+
+  // Étoiles brillantes → alt/az à l'instant/lieu (n'apparaissent que de nuit).
+  const d = dayNumber(now);
+  const sun = sunEquatorial(d);
+  const stars = sky.sun.altDeg < -2
+    ? STARS.map((s) => ({ ...s, ...equatorialToHorizontal(s.ra, s.dec, fix.lat, fix.lon, d, sun) }))
+    : [];
+
   return (
     <svg className="sky-overlay" width={W} height={H}>
+      {stars.map((s) => (
+        <Star key={s.name} star={s} headingDeg={headingDeg} elevationDeg={elevationDeg} degPerPx={degPerPx} W={W} H={H} />
+      ))}
       <Body body={sky.sun} glyph="☉" headingDeg={headingDeg} elevationDeg={elevationDeg} degPerPx={degPerPx} W={W} H={H} />
       <Body body={sky.moon} glyph="☾" headingDeg={headingDeg} elevationDeg={elevationDeg} degPerPx={degPerPx} W={W} H={H} />
     </svg>

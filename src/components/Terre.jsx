@@ -10,7 +10,7 @@ import { heightFromElevationsM } from '../lib/geometry.js';
  * 3. Viser le SOMMET → hauteur du bâtiment (différence d'élévations à
  *    distance connue). Le MNT ne s'affiche jamais : lookup silencieux.
  */
-export default function Terre({ fix, headingDeg, headingSource, elevationDeg, eyeHeightM, dem, onSave, onRecalibrate }) {
+export default function Terre({ fix, headingDeg, headingSource, elevationDeg, eyeHeightM, dem, onSave, onRecalibrate, onSaveWaypoint }) {
   const [base, setBase] = useState(null);   // { distanceM, altM, elevDeg }
   const [summit, setSummit] = useState(null); // { elevDeg, heightM }
 
@@ -119,7 +119,12 @@ export default function Terre({ fix, headingDeg, headingSource, elevationDeg, ey
           <div className="row measure">
             <button className="btn" onClick={aimBase}>Viser base</button>
             <button className="btn" disabled={!base || base === 'miss'} onClick={aimSummit}>Viser sommet</button>
-            <span className="hint">sauvegarde auto au journal</span>
+            {base && base !== 'miss' && onSaveWaypoint && (
+              <button className="btn ghost"
+                onClick={() => onSaveWaypoint({ name: 'cible', lat: base.lat, lon: base.lon })}>
+                → waypoint
+              </button>
+            )}
           </div>
         </>
       )}

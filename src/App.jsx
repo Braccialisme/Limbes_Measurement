@@ -25,7 +25,7 @@ import SkyOverlay from './components/SkyOverlay.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-10c · overlay ciel + export journal';
+const BUILD = '2026-07-10d · étoiles nommées + terre→waypoint';
 
 export default function App() {
   const orient = useOrientation();
@@ -210,6 +210,7 @@ export default function App() {
                 dem={dem}
                 onSave={journal.add}
                 onRecalibrate={openSilhouette}
+                onSaveWaypoint={waypoints.add}
               />
             </>
           )}
