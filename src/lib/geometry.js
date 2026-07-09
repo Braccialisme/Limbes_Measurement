@@ -70,6 +70,25 @@ export function hiddenHeightM(distanceBeyondHorizonKm) {
 }
 
 /**
+ * Distance (m) d'un objet dont la LIGNE DE FLOTTAISON est visible, depuis
+ * l'angle de dépression mesuré sous l'horizontale vraie (pitch) et la hauteur
+ * d'œil. La dépression d'un point à la surface à distance d vaut
+ *   β ≈ h/d + d/(2R')  (chute géométrique + courbure).
+ * On inverse : d²/(2R') − β·d + h = 0 → racine proche
+ *   d = R'·(β − √(β² − 2h/R')).
+ * Si β < dip de l'horizon (discriminant < 0), la flottaison est au-delà de
+ * l'horizon → non mesurable ici (retourne null). C'est LA distance marine,
+ * fondée sur le pitch (précis), sans FOV.
+ */
+export function distanceFromWaterlineDipM(depressionDeg, eyeHeightM) {
+  if (depressionDeg <= 0 || eyeHeightM <= 0) return null;
+  const beta = depressionDeg * DEG;
+  const disc = beta * beta - (2 * eyeHeightM) / EARTH_R_EFF;
+  if (disc < 0) return null; // au-delà de l'horizon
+  return EARTH_R_EFF * (beta - Math.sqrt(disc));
+}
+
+/**
  * Le diagnostic binaire de la plage.
  * Si la ligne de flottaison est visible → l'objet est en deçà de l'horizon :
  * distance max = horizon, et la taille se calcule directement.

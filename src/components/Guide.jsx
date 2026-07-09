@@ -20,8 +20,8 @@ const SECTIONS = [
     d: "Distance et hauteur d'un objet lointain sur le terrain. 1) « Télécharger ma région » (relief, une fois, puis hors-ligne). 2) Vise la base → distance à vol d'oiseau + altitude. 3) Vise le sommet → hauteur du bâtiment. Si le cap est douteux, « Recaler azimut » : superpose le profil de crête et glisse-le sur la vraie crête.",
   },
   {
-    t: 'Mer — trop gros ?',
-    d: "Depuis la plage : mesure la largeur de l'objet (curseurs, gèle l'image), dis si sa ligne de flottaison est visible. Flottaison visible → il est en deçà de l'horizon : distance et taille MAX. Coque tranchée par l'horizon → au-delà : taille PLANCHER (« au moins ça » — assez pour dire « trop gros pour un chalutier »). Ta hauteur d'œil donne la distance d'horizon.",
+    t: 'Mer — distance & hauteur',
+    d: "Depuis la plage. DISTANCE + HAUTEUR (précis, sans calibration) : vise la ligne de flottaison de l'objet, tape « Viser flottaison », vise le sommet, tape « Viser sommet ». La dépression de la flottaison sous l'horizontale + ta hauteur d'œil donnent la distance (géométrie de l'horizon) ; flottaison→sommet donne la hauteur. Ça marche tant que la flottaison est en deçà de l'horizon. LARGEUR → TAILLE (avec FOV calibré) : mesure la largeur aux curseurs + « flottaison visible ? » → taille MAX si en deçà, ou PLANCHER si la coque est tranchée (« trop gros pour un chalutier »).",
   },
   {
     t: 'Ciel — almanach',

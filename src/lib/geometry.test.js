@@ -5,6 +5,7 @@ import {
   eyeHeightFromDipDeg,
   hiddenHeightM,
   seaObjectEstimate,
+  distanceFromWaterlineDipM,
   angularSizeToPhysicalM,
   angularWidthDeg,
   degPerScreenPx,
@@ -46,6 +47,16 @@ describe('cas plage', () => {
     const r = seaObjectEstimate({ eyeHeightM: 1.6, angularWidthDeg: 1, waterlineVisible: true });
     expect(r.kind).toBe('within-horizon');
     expect(r.maxSizeM).toBeCloseTo(84.5, 0); // 1° à ~4.84 km ≈ 84.5 m
+  });
+  it('distance par dépression de flottaison : aller-retour à 1 km', () => {
+    // Dépression d'un point de mer à 1000 m, œil 1.6 m (β = h/d + d/2R').
+    const h = 1.6, d = 1000;
+    const betaDeg = (h / d + d / (2 * 6371000 / (1 - 0.13))) * (180 / Math.PI);
+    expect(distanceFromWaterlineDipM(betaDeg, h)).toBeCloseTo(1000, 0);
+  });
+  it('flottaison au-delà de l’horizon → null', () => {
+    // dip à 1.6 m ≈ 0.038° ; une dépression plus faible = au-delà.
+    expect(distanceFromWaterlineDipM(0.02, 1.6)).toBeNull();
   });
   it('coque tranchée → plancher de taille', () => {
     const r = seaObjectEstimate({ eyeHeightM: 1.6, angularWidthDeg: 2, waterlineVisible: false });

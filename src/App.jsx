@@ -24,7 +24,7 @@ import Guide from './components/Guide.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-10 · guide + logo + nuit Safari';
+const BUILD = '2026-07-10b · mer distance+hauteur (dépression)';
 
 export default function App() {
   const orient = useOrientation();
@@ -213,13 +213,23 @@ export default function App() {
           )}
 
           {tab === 'mer' && (
-            <Mer
-              cal={cal}
-              eyeHeightM={eyeHeightM}
-              onCalibrate={() => setCalOpen(true)}
-              onSave={journal.add}
-              videoRef={videoRef}
-            />
+            <>
+              <Reticle
+                elevationDeg={orient.elevationDeg}
+                rollDeg={orient.rollDeg}
+                markA={markA}
+                markB={markB}
+                cal={cal}
+              />
+              <Mer
+                cal={cal}
+                eyeHeightM={eyeHeightM}
+                elevationDeg={orient.elevationDeg}
+                onCalibrate={() => setCalOpen(true)}
+                onSave={journal.add}
+                videoRef={videoRef}
+              />
+            </>
           )}
 
           {tab === 'ciel' && (
