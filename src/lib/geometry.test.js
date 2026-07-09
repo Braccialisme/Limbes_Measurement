@@ -15,6 +15,8 @@ import {
   formatDMS,
   destinationPoint,
   degPerPixel,
+  bearingDeg,
+  haversineDistanceM,
 } from './geometry.js';
 
 describe('horizon', () => {
@@ -90,6 +92,13 @@ describe('séparation angulaire', () => {
 describe('formats & géodésie', () => {
   it('DMS', () => {
     expect(formatDMS(1.5375)).toBe('1° 32′ 15″');
+  });
+  it('relèvement plein est ≈ 90°, plein nord ≈ 0°', () => {
+    expect(bearingDeg(0, 0, 0, 1)).toBeCloseTo(90, 4);
+    expect(bearingDeg(0, 0, 1, 0)).toBeCloseTo(0, 4);
+  });
+  it('haversine : 1° de longitude à l’équateur ≈ 111.3 km', () => {
+    expect(haversineDistanceM(0, 0, 0, 1) / 1000).toBeCloseTo(111.3, 0);
   });
   it('destinationPoint : 111.2 km plein nord ≈ +1° de latitude', () => {
     const p = destinationPoint(45, 5, 0, 111_195);

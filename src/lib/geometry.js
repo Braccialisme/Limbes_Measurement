@@ -207,6 +207,25 @@ export function destinationPoint(latDeg, lonDeg, bearingDeg, distanceM) {
   return { latDeg: φ2 * RAD, lonDeg: ((λ2 * RAD + 540) % 360) - 180 };
 }
 
+/**
+ * Relèvement initial (deg, 0=N horaire) du grand cercle de (lat1,lon1) vers
+ * (lat2,lon2). C'est l'azimut du pélorus : vers où pointer pour viser un point.
+ */
+export function bearingDeg(lat1, lon1, lat2, lon2) {
+  const φ1 = lat1 * DEG, φ2 = lat2 * DEG, Δλ = (lon2 - lon1) * DEG;
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return (Math.atan2(y, x) * RAD + 360) % 360;
+}
+
+/** Distance grand cercle (m) entre deux points (haversine). */
+export function haversineDistanceM(lat1, lon1, lat2, lon2) {
+  const φ1 = lat1 * DEG, φ2 = lat2 * DEG;
+  const dφ = (lat2 - lat1) * DEG, dλ = (lon2 - lon1) * DEG;
+  const a = Math.sin(dφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(dλ / 2) ** 2;
+  return 2 * EARTH_R * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+
 /* ------------------------------------------------------------------ */
 /* Plate scale caméra — pour graduer le réticule                       */
 /* ------------------------------------------------------------------ */

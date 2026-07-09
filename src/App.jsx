@@ -5,6 +5,7 @@ import { useCamera } from './hooks/useCamera.js';
 import { useCalibration } from './hooks/useCalibration.js';
 import { useJournal } from './hooks/useJournal.js';
 import { useDem } from './hooks/useDem.js';
+import { useWaypoints } from './hooks/useWaypoints.js';
 import { angularSeparationDeg, formatDMS } from './lib/geometry.js';
 import { crestProfile } from './lib/dem.js';
 import Reticle from './components/Reticle.jsx';
@@ -18,10 +19,11 @@ import Maths from './components/Maths.jsx';
 import Terre from './components/Terre.jsx';
 import Mer from './components/Mer.jsx';
 import Ciel from './components/Ciel.jsx';
+import Pelorus from './components/Pelorus.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09o · freeze-frame + almanach';
+const BUILD = '2026-07-09p · pélorus / waypoints';
 
 export default function App() {
   const orient = useOrientation();
@@ -35,6 +37,7 @@ export default function App() {
   const { cal, save: saveCal } = useCalibration(lensKey);
   const journal = useJournal();
   const dem = useDem();
+  const waypoints = useWaypoints();
   const [tab, setTab] = useState('sight'); // 'sight' | 'civil' | 'journal'
   const [calOpen, setCalOpen] = useState(false);
   // Hauteur d'œil mémorisée une fois (localStorage) — plus fiable qu'un auto.
@@ -147,7 +150,7 @@ export default function App() {
               FOV
             </button>
           </div>
-          {(tab === 'sight' || tab === 'civil' || tab === 'terre' || tab === 'mer' || tab === 'ciel') && (
+          {tab !== 'journal' && tab !== 'maths' && (
             <LensControl
               devices={devices}
               deviceId={deviceId}
@@ -232,6 +235,19 @@ export default function App() {
                 headingDeg={headingCorrected}
                 elevationDeg={orient.elevationDeg}
               />
+            </>
+          )}
+
+          {tab === 'pelorus' && (
+            <>
+              <Reticle
+                elevationDeg={orient.elevationDeg}
+                rollDeg={orient.rollDeg}
+                markA={markA}
+                markB={markB}
+                cal={cal}
+              />
+              <Pelorus fix={fix} headingDeg={headingCorrected} waypoints={waypoints} />
             </>
           )}
 

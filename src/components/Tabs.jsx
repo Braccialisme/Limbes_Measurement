@@ -4,6 +4,7 @@ const TABS = [
   ['terre', 'Terre'],
   ['mer', 'Mer'],
   ['ciel', 'Ciel'],
+  ['pelorus', 'Pélorus'],
   ['civil', 'Civil'],
   ['journal', 'Journal'],
   ['maths', 'Maths'],
