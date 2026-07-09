@@ -21,18 +21,27 @@ const EYE_PRESETS = [
 ];
 
 export default function Readout({
-  elevationDeg, rollDeg, headingDeg, headingSource,
+  elevationDeg, elevationNoiseDeg, rollDeg, headingDeg, headingSource,
   fix, gpsError, cal, eyeHeightM, onEyeHeight,
   markA, markB, separationDeg, onMark, onClearMarks, build,
 }) {
   const dHorizon = horizonDistanceKm(eyeHeightM);
   const fovDeg = cal ? cal.degPerPx * window.innerWidth : null;
+  // Incertitude : ± en arcmin ; stable si sous ~0.15°.
+  const noiseMin = elevationNoiseDeg != null ? elevationNoiseDeg * 60 : null;
+  const stable = noiseMin != null && noiseMin < 9;
 
   return (
     <div className="readout">
       <div className="row primary">
         <div className="cell">
-          <span className="label">Élévation</span>
+          <span className="label">
+            Élévation{noiseMin != null && (
+              <span style={{ color: stable ? 'var(--brass)' : 'var(--signal)' }}>
+                {' '}±{noiseMin.toFixed(0)}′ {stable ? '●' : '○'}
+              </span>
+            )}
+          </span>
           <span className="value">
             {elevationDeg == null ? '· · ·' : formatDMS(elevationDeg)}
           </span>

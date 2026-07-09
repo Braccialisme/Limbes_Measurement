@@ -28,10 +28,11 @@ export function useOrientation() {
     rollDeg: null,
     headingDeg: null,
     headingSource: 'none', // 'compass' | 'absolute' | 'relative' | 'none'
+    elevationNoiseDeg: null, // bruit résiduel (incertitude) de l'élévation
   });
 
   // Accumulateurs EMA persistants entre événements.
-  const s = useRef({ elev: null, roll: null, sin: null, cos: null });
+  const s = useRef({ elev: null, roll: null, sin: null, cos: null, dev: null });
 
   const requestAccess = useCallback(async () => {
     const D = typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : null;
@@ -73,7 +74,11 @@ export function useOrientation() {
 
       const acc = s.current;
       const elevRaw = e.beta == null ? null : e.beta - 90;
-      if (elevRaw != null) acc.elev = ema(acc.elev, elevRaw, A_TILT);
+      if (elevRaw != null) {
+        acc.elev = ema(acc.elev, elevRaw, A_TILT);
+        // Déviation absolue moyenne au signal lissé = proxy d'incertitude.
+        acc.dev = ema(acc.dev, Math.abs(elevRaw - acc.elev), 0.1);
+      }
 
       // Fallback roll depuis gamma UNIQUEMENT si pas de devicemotion (roll null).
       if (acc.roll == null && e.gamma != null) acc.roll = ema(acc.roll, e.gamma, A_TILT);
@@ -92,6 +97,7 @@ export function useOrientation() {
         rollDeg: acc.roll,
         headingDeg: headingOut,
         headingSource: source,
+        elevationNoiseDeg: acc.dev,
       }));
     };
 

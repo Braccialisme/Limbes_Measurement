@@ -25,7 +25,7 @@ import SkyOverlay from './components/SkyOverlay.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-10d · étoiles nommées + terre→waypoint';
+const BUILD = '2026-07-10e · incertitude ± sur l’élévation';
 
 export default function App() {
   const orient = useOrientation();
@@ -174,6 +174,7 @@ export default function App() {
               />
               <Readout
                 elevationDeg={orient.elevationDeg}
+                elevationNoiseDeg={orient.elevationNoiseDeg}
                 rollDeg={orient.rollDeg}
                 headingDeg={headingCorrected}
                 headingSource={orient.headingSource}
