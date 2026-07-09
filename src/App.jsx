@@ -17,10 +17,11 @@ import Journal from './components/Journal.jsx';
 import Maths from './components/Maths.jsx';
 import Terre from './components/Terre.jsx';
 import Mer from './components/Mer.jsx';
+import Ciel from './components/Ciel.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09l · calibration cover + réticule réel';
+const BUILD = '2026-07-09m · astro Soleil/Lune';
 
 export default function App() {
   const orient = useOrientation();
@@ -145,7 +146,7 @@ export default function App() {
               FOV
             </button>
           </div>
-          {(tab === 'sight' || tab === 'civil' || tab === 'terre' || tab === 'mer') && (
+          {(tab === 'sight' || tab === 'civil' || tab === 'terre' || tab === 'mer' || tab === 'ciel') && (
             <LensControl
               devices={devices}
               deviceId={deviceId}
@@ -213,6 +214,23 @@ export default function App() {
               onCalibrate={() => setCalOpen(true)}
               onSave={journal.add}
             />
+          )}
+
+          {tab === 'ciel' && (
+            <>
+              <Reticle
+                elevationDeg={orient.elevationDeg}
+                rollDeg={orient.rollDeg}
+                markA={markA}
+                markB={markB}
+                cal={cal}
+              />
+              <Ciel
+                fix={fix}
+                headingDeg={headingCorrected}
+                elevationDeg={orient.elevationDeg}
+              />
+            </>
           )}
 
           {tab === 'civil' && (
