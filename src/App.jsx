@@ -6,6 +6,7 @@ import { useCalibration } from './hooks/useCalibration.js';
 import { useJournal } from './hooks/useJournal.js';
 import { useDem } from './hooks/useDem.js';
 import { angularSeparationDeg, formatDMS } from './lib/geometry.js';
+import { crestProfile } from './lib/dem.js';
 import Reticle from './components/Reticle.jsx';
 import Readout from './components/Readout.jsx';
 import Calibration from './components/Calibration.jsx';
@@ -15,9 +16,10 @@ import Civil from './components/Civil.jsx';
 import Journal from './components/Journal.jsx';
 import Maths from './components/Maths.jsx';
 import Terre from './components/Terre.jsx';
+import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09h · maths pleine page + save auto';
+const BUILD = '2026-07-09i · silhouette + DEM z13';
 
 export default function App() {
   const orient = useOrientation();
@@ -45,6 +47,17 @@ export default function App() {
   const [markA, setMarkA] = useState(null);
   const [markB, setMarkB] = useState(null);
 
+  // Offset d'azimut (recalage silhouette), persisté et appliqué au heading.
+  const [azOffset, setAzOffset] = useState(() => Number(localStorage.getItem('limbe.azOffset')) || 0);
+  const setOffset = useCallback((v) => {
+    setAzOffset(v);
+    try { localStorage.setItem('limbe.azOffset', String(v)); } catch { /* quota */ }
+  }, []);
+  const [silhouette, setSilhouette] = useState(null); // profil de crête | null
+
+  const headingCorrected =
+    orient.headingDeg == null ? null : (orient.headingDeg + azOffset + 360) % 360;
+
   const start = useCallback(async () => {
     const ok = await orient.requestAccess();
     if (ok) setStarted(true);
@@ -54,7 +67,7 @@ export default function App() {
     if (orient.elevationDeg == null) return;
     const sight = {
       elevationDeg: orient.elevationDeg,
-      azimuthDeg: orient.headingDeg ?? 0,
+      azimuthDeg: headingCorrected ?? 0,
     };
     if (!markA) setMarkA(sight);
     else if (!markB) {
@@ -63,7 +76,17 @@ export default function App() {
       const sep = angularSeparationDeg(markA, sight);
       journal.add({ kind: 'sep', label: 'séparation A→B', detail: formatDMS(sep) });
     } else { setMarkA(sight); setMarkB(null); }
-  }, [orient.elevationDeg, orient.headingDeg, markA, markB, journal]);
+  }, [orient.elevationDeg, headingCorrected, markA, markB, journal]);
+
+  // Calcule le profil de crête et ouvre le recalage silhouette.
+  const openSilhouette = useCallback(() => {
+    if (!fix || !dem.ready) return;
+    const observerAlt = (dem.sample(fix.lat, fix.lon) ?? 0) + eyeHeightM;
+    const profile = crestProfile({
+      latDeg: fix.lat, lonDeg: fix.lon, observerAltM: observerAlt, sample: dem.sample,
+    });
+    setSilhouette(profile);
+  }, [fix, dem, eyeHeightM]);
 
   const clearMarks = useCallback(() => { setMarkA(null); setMarkB(null); }, []);
 
@@ -133,7 +156,7 @@ export default function App() {
               <Readout
                 elevationDeg={orient.elevationDeg}
                 rollDeg={orient.rollDeg}
-                headingDeg={orient.headingDeg}
+                headingDeg={headingCorrected}
                 headingSource={orient.headingSource}
                 fix={fix}
                 gpsError={gpsError}
@@ -160,12 +183,13 @@ export default function App() {
               />
               <Terre
                 fix={fix}
-                headingDeg={orient.headingDeg}
+                headingDeg={headingCorrected}
                 headingSource={orient.headingSource}
                 elevationDeg={orient.elevationDeg}
                 eyeHeightM={eyeHeightM}
                 dem={dem}
                 onSave={journal.add}
+                onRecalibrate={openSilhouette}
               />
             </>
           )}
@@ -191,6 +215,18 @@ export default function App() {
 
           {tab === 'maths' && (
             <Maths eyeHeightM={eyeHeightM} cal={cal} />
+          )}
+
+          {silhouette && (
+            <Silhouette
+              profile={silhouette}
+              headingRaw={orient.headingDeg}
+              offset={azOffset}
+              elevationDeg={orient.elevationDeg}
+              cal={cal}
+              onCommit={(v) => { setOffset(v); setSilhouette(null); }}
+              onCancel={() => setSilhouette(null)}
+            />
           )}
         </>
       )}

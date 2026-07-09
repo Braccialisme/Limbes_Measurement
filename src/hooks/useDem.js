@@ -8,7 +8,7 @@ import { decodeTerrarium, lngLatToGlobalPixel, tileFor } from '../lib/dem.js';
  * `sample(lat, lon)` synchrone pour le ray-march. Le DEM ne s'affiche
  * JAMAIS : lookup silencieux.
  */
-const Z = 12;              // ~30 m/px, largement assez
+const Z = 13;              // ~15 m/px (fin ; ~30 m au niveau 12 sinon)
 const TS = 256;
 const CACHE = 'limbe-dem-v1';
 const TILE_URL = (z, x, y) =>

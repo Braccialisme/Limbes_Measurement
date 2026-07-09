@@ -4,6 +4,8 @@ import {
   lngLatToGlobalPixel,
   tileFor,
   rayMarchTerrain,
+  apparentElevationDeg,
+  crestProfile,
 } from './dem.js';
 
 describe('terrarium', () => {
@@ -73,5 +75,26 @@ describe('ray-march', () => {
       sample: () => null, maxDistanceM: 5000, stepM: 25,
     });
     expect(hit).toBeNull();
+  });
+});
+
+describe('silhouette / crête', () => {
+  it('élévation apparente : +100 m à 1 km ≈ 5.7°', () => {
+    expect(apparentElevationDeg(200, 100, 1000)).toBeCloseTo(5.71, 1);
+  });
+  it('même altitude : légèrement négatif (dip de courbure)', () => {
+    expect(apparentElevationDeg(100, 100, 1000)).toBeLessThan(0);
+  });
+  it('profil de crête : colline au nord domine le sud', () => {
+    const lat0 = 45, lon0 = 5;
+    const sample = (lat) => (lat > lat0 ? 500 : 0); // relief au nord
+    const prof = crestProfile({
+      latDeg: lat0, lonDeg: lon0, observerAltM: 0, sample,
+      azStepDeg: 10, maxDistanceM: 8000, stepM: 100,
+    });
+    expect(prof).toHaveLength(36);
+    const at = (a) => prof.find((p) => p.azDeg === a).elevDeg;
+    expect(at(0)).toBeGreaterThan(1);       // nord : crête haute
+    expect(at(0)).toBeGreaterThan(at(180)); // > sud (plat)
   });
 });

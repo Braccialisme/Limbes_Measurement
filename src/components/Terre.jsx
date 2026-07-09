@@ -10,7 +10,7 @@ import { heightFromElevationsM } from '../lib/geometry.js';
  * 3. Viser le SOMMET → hauteur du bâtiment (différence d'élévations à
  *    distance connue). Le MNT ne s'affiche jamais : lookup silencieux.
  */
-export default function Terre({ fix, headingDeg, headingSource, elevationDeg, eyeHeightM, dem, onSave }) {
+export default function Terre({ fix, headingDeg, headingSource, elevationDeg, eyeHeightM, dem, onSave, onRecalibrate }) {
   const [base, setBase] = useState(null);   // { distanceM, altM, elevDeg }
   const [summit, setSummit] = useState(null); // { elevDeg, heightM }
 
@@ -77,10 +77,12 @@ export default function Terre({ fix, headingDeg, headingSource, elevationDeg, ey
         <>
           {!azOk && (
             <p className="hint" style={{ color: 'var(--signal)' }}>
-              azimut non absolu ({headingSource}) → distance peu fiable.
-              Recalage par silhouette prévu.
+              azimut non absolu ({headingSource}) → recale sur la crête.
             </p>
           )}
+          <div className="row measure">
+            <button className="btn ghost" onClick={onRecalibrate}>Recaler azimut (silhouette)</button>
+          </div>
           <div className="row">
             <div className="cell">
               <span className="label">Sol observateur</span>

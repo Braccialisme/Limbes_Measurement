@@ -84,5 +84,44 @@ function sampleOr(sample, lat, lon) {
   return v == null ? 0 : v;
 }
 
+/**
+ * Angle d'élévation apparent (deg) d'un point de sol à distance d, altitude g,
+ * vu d'un observateur à observerAltM — dip de courbure inclus :
+ *   elev = atan( (g − obs)/d − d/(2R') )
+ * Le terme −d/(2R') abaisse l'horizon lointain (la Terre se dérobe).
+ */
+export function apparentElevationDeg(groundAltM, observerAltM, distanceM) {
+  if (distanceM <= 0) return 0;
+  const slope = (groundAltM - observerAltM) / distanceM - distanceM / (2 * EARTH_R_EFF);
+  return Math.atan(slope) * (180 / Math.PI);
+}
+
+/**
+ * Profil de crête (silhouette) à 360° depuis (lat, lon). Pour chaque azimut,
+ * marche le long du rayon et garde l'angle d'élévation MAX du sol → la ligne
+ * d'horizon terrestre. Sert au recalage d'azimut : on superpose ce profil au
+ * liveview, l'utilisateur le fait coïncider avec la vraie crête → offset.
+ *
+ * @returns tableau { azDeg, elevDeg } (elevDeg = skyline, peut être négatif).
+ */
+export function crestProfile({
+  latDeg, lonDeg, observerAltM, sample,
+  azStepDeg = 1, maxDistanceM = 40000, stepM = 60,
+}) {
+  const profile = [];
+  for (let az = 0; az < 360; az += azStepDeg) {
+    let maxElev = -90;
+    for (let d = stepM; d <= maxDistanceM; d += stepM) {
+      const p = destinationPoint(latDeg, lonDeg, az, d);
+      const g = sample(p.latDeg, p.lonDeg);
+      if (g == null) break; // hors couverture : on arrête ce rayon
+      const elev = apparentElevationDeg(g, observerAltM, d);
+      if (elev > maxElev) maxElev = elev;
+    }
+    profile.push({ azDeg: az, elevDeg: maxElev });
+  }
+  return profile;
+}
+
 /** Rappel : rayon terrestre effectif utilisé (avec réfraction). */
 export const DEM_EARTH_R_EFF = EARTH_R_EFF;
