@@ -13,7 +13,7 @@ import {
  * dérive jamais du code. Chaque bloc : la formule, le pourquoi, et quand
  * c'est possible la valeur COURANTE injectée (ta hauteur d'œil, ton FOV…).
  */
-export default function Maths({ eyeHeightM, cal }) {
+export default function Maths({ eyeHeightM, cal, night, onToggleNight }) {
   const dHorizon = horizonDistanceKm(eyeHeightM);
   const dip = horizonDipDeg(eyeHeightM);
   const fovDeg = cal ? cal.degPerPx * window.innerWidth : null;
@@ -72,6 +72,17 @@ export default function Maths({ eyeHeightM, cal }) {
   return (
     <div className="maths-sheet">
       <div className="panel-title">Limbe — mode d’emploi &amp; maths</div>
+
+      <div className="row">
+        <div className="cell">
+          <span className="label">Réglages</span>
+          <span className="presets">
+            <button className={`chip${night ? ' active' : ''}`} onClick={onToggleNight}>
+              mode nuit rouge {night ? '●' : '○'}
+            </button>
+          </span>
+        </div>
+      </div>
 
       <div className="maths-intro">
         <p>

@@ -36,6 +36,17 @@ export function tileFor(latDeg, lonDeg, z, tileSize = 256) {
 }
 
 /**
+ * Interpolation bilinéaire de 4 altitudes voisines. fx, fy ∈ [0,1] = position
+ * fractionnaire entre les pixels. Lisse le relief au lieu de sauter d'un
+ * pixel à l'autre (fini l'effet escalier du plus-proche-voisin).
+ */
+export function bilinear(v00, v10, v01, v11, fx, fy) {
+  const top = v00 + (v10 - v00) * fx;
+  const bot = v01 + (v11 - v01) * fx;
+  return top + (bot - top) * fy;
+}
+
+/**
  * Ray-march de la ligne de visée sur le relief.
  * Depuis (lat, lon, observerAltM = sol DEM + hauteur d'œil), on marche le
  * long de l'azimut par pas `stepM`. À chaque pas, l'altitude de la ligne de

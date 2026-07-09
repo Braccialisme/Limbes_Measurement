@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useOrientation } from './hooks/useOrientation.js';
 import { useGeolocation } from './hooks/useGeolocation.js';
 import { useCamera } from './hooks/useCamera.js';
@@ -20,7 +20,7 @@ import Mer from './components/Mer.jsx';
 import Silhouette from './components/Silhouette.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09j · FOV direct + mode mer';
+const BUILD = '2026-07-09k · DEM bilinéaire + nuit rouge';
 
 export default function App() {
   const orient = useOrientation();
@@ -55,6 +55,13 @@ export default function App() {
     try { localStorage.setItem('limbe.azOffset', String(v)); } catch { /* quota */ }
   }, []);
   const [silhouette, setSilhouette] = useState(null); // profil de crête | null
+
+  // Mode nuit rouge (préserve la vision nocturne). Classe sur <html>.
+  const [night, setNight] = useState(() => localStorage.getItem('limbe.night') === '1');
+  useEffect(() => {
+    document.documentElement.classList.toggle('night', night);
+    try { localStorage.setItem('limbe.night', night ? '1' : '0'); } catch { /* quota */ }
+  }, [night]);
 
   const headingCorrected =
     orient.headingDeg == null ? null : (orient.headingDeg + azOffset + 360) % 360;
@@ -119,6 +126,7 @@ export default function App() {
   return (
     <div className="instrument">
       <video ref={videoRef} autoPlay playsInline muted className="liveview" />
+      {night && <div className="night-veil" />}
       {camError && <div className="cam-error">caméra : {camError}</div>}
 
       {calOpen ? (
@@ -224,7 +232,7 @@ export default function App() {
           )}
 
           {tab === 'maths' && (
-            <Maths eyeHeightM={eyeHeightM} cal={cal} />
+            <Maths eyeHeightM={eyeHeightM} cal={cal} night={night} onToggleNight={() => setNight((n) => !n)} />
           )}
 
           {silhouette && (

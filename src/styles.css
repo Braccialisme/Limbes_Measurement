@@ -24,6 +24,26 @@
   --mono: 'VG5000', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
+/* Mode nuit rouge : tout en rouge sombre pour préserver la vision nocturne.
+   La palette est monochrome rouge ; le fond reste quasi noir. */
+:root.night {
+  --steel: #070203;
+  --steel-2: #160809;
+  --ivory: #e0503a;
+  --ivory-dim: #7a3327;
+  --brass: #a3341c;
+  --signal: #ff4b33;
+}
+/* voile rouge multiplié sur le liveview → caméra red-shiftée */
+.night-veil {
+  position: absolute; inset: 0;
+  background: #ff0000;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 1;
+}
+
 * { box-sizing: border-box; margin: 0; }
 
 html, body, #root {

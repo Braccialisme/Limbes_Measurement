@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
-import { decodeTerrarium, lngLatToGlobalPixel, tileFor } from '../lib/dem.js';
+import { decodeTerrarium, lngLatToGlobalPixel, tileFor, bilinear } from '../lib/dem.js';
 
 /**
  * Chargement du MNT (tuiles terrarium AWS Terrain Tiles, SRTM/Copernicus).
@@ -48,15 +48,27 @@ export function useDem() {
   const tiles = useRef(new Map());  // "z/x/y" → ImageData
   const [status, setStatus] = useState({ ready: false, loading: false, progress: 0, error: null });
 
-  const sample = useCallback((latDeg, lonDeg) => {
-    const p = lngLatToGlobalPixel(latDeg, lonDeg, Z, TS);
-    const tx = Math.floor(p.x / TS), ty = Math.floor(p.y / TS);
+  // Altitude d'un pixel GLOBAL (X,Y) : résout la tuile + le pixel, décode.
+  const pxAt = (X, Y) => {
+    const tx = Math.floor(X / TS), ty = Math.floor(Y / TS);
     const img = tiles.current.get(`${Z}/${tx}/${ty}`);
     if (!img) return null;
-    const px = Math.min(TS - 1, Math.floor(p.x) - tx * TS);
-    const py = Math.min(TS - 1, Math.floor(p.y) - ty * TS);
-    const i = (py * TS + px) * 4;
+    const i = ((Y - ty * TS) * TS + (X - tx * TS)) * 4;
     return decodeTerrarium(img.data[i], img.data[i + 1], img.data[i + 2]);
+  };
+
+  const sample = useCallback((latDeg, lonDeg) => {
+    const p = lngLatToGlobalPixel(latDeg, lonDeg, Z, TS);
+    // Centres de pixels en (X+0.5) : on interpole entre les 4 voisins.
+    const gx = p.x - 0.5, gy = p.y - 0.5;
+    const x0 = Math.floor(gx), y0 = Math.floor(gy);
+    const fx = gx - x0, fy = gy - y0;
+    const v00 = pxAt(x0, y0), v10 = pxAt(x0 + 1, y0);
+    const v01 = pxAt(x0, y0 + 1), v11 = pxAt(x0 + 1, y0 + 1);
+    if (v00 == null || v10 == null || v01 == null || v11 == null) {
+      return v00 ?? v10 ?? v01 ?? v11 ?? null; // bord de couverture : plus proche dispo
+    }
+    return bilinear(v00, v10, v01, v11, fx, fy);
   }, []);
 
   /** Télécharge les tuiles couvrant une bbox de ±halfDeg autour de (lat,lon). */

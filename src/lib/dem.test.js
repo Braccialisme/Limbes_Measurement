@@ -6,6 +6,7 @@ import {
   rayMarchTerrain,
   apparentElevationDeg,
   crestProfile,
+  bilinear,
 } from './dem.js';
 
 describe('terrarium', () => {
@@ -75,6 +76,18 @@ describe('ray-march', () => {
       sample: () => null, maxDistanceM: 5000, stepM: 25,
     });
     expect(hit).toBeNull();
+  });
+});
+
+describe('bilinéaire', () => {
+  it('coins exacts', () => {
+    expect(bilinear(10, 20, 30, 40, 0, 0)).toBe(10);
+    expect(bilinear(10, 20, 30, 40, 1, 0)).toBe(20);
+    expect(bilinear(10, 20, 30, 40, 0, 1)).toBe(30);
+    expect(bilinear(10, 20, 30, 40, 1, 1)).toBe(40);
+  });
+  it('centre = moyenne des 4', () => {
+    expect(bilinear(10, 20, 30, 40, 0.5, 0.5)).toBe(25);
   });
 });
 
