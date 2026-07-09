@@ -5,16 +5,17 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  *
  * Téléphone tenu en PORTRAIT, caméra arrière visant la cible :
  *   - beta ≈ 90° quand l'axe caméra est horizontal → élévation = beta − 90.
- *   - gamma ≈ roll (mise de niveau du limbe).
- *   - heading : webkitCompassHeading sur iOS (fiable-ish),
- *     sinon deviceorientationabsolute (Android), sinon alpha (repère arbitraire !).
+ *   - heading : webkitCompassHeading (iOS), deviceorientationabsolute
+ *     (Android), sinon alpha (repère arbitraire).
  *
- * LISSAGE : chaque valeur passe par une moyenne exponentielle (EMA) pour
- * tuer le tremblement capteur — c'est notre "stabilisateur". Le heading est
- * lissé en circulaire (sin/cos) pour franchir 0/360 sans à-coup. alpha bas
- * = plus stable mais plus de latence ; on vise steady-avant-tap.
+ * ROLL : PAS depuis gamma ! Dans la pose de visée beta≈90° = dégénérescence
+ * des angles d'Euler (gimbal lock) → gamma saute partout. On calcule le roll
+ * depuis le VECTEUR GRAVITÉ (devicemotion / accéléromètre), stable à toute
+ * inclinaison : roll = atan2(ax, −ay) sur le plan de l'écran.
+ *
+ * LISSAGE : moyenne exponentielle (EMA) sur tout — c'est le stabilisateur.
  */
-const A_TILT = 0.1;   // élévation & roll (bas = très stable)
+const A_TILT = 0.1;   // élévation & roll
 const A_HEAD = 0.1;   // azimut (circulaire)
 
 export function useOrientation() {
@@ -29,47 +30,54 @@ export function useOrientation() {
     headingSource: 'none', // 'compass' | 'absolute' | 'relative' | 'none'
   });
 
-  // Accumulateurs EMA (persistants entre événements).
+  // Accumulateurs EMA persistants entre événements.
   const s = useRef({ elev: null, roll: null, sin: null, cos: null });
 
   const requestAccess = useCallback(async () => {
-    if (typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
-      const res = await DeviceOrientationEvent.requestPermission();
-      if (res !== 'granted') return false;
-    }
-    setState(s => ({ ...s, granted: true, needsPermission: false }));
+    const D = typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : null;
+    const M = typeof DeviceMotionEvent !== 'undefined' ? DeviceMotionEvent : null;
+    try {
+      if (D && typeof D.requestPermission === 'function') {
+        if (await D.requestPermission() !== 'granted') return false;
+      }
+      if (M && typeof M.requestPermission === 'function') {
+        await M.requestPermission(); // gravité pour le roll ; non bloquant si refusé
+      }
+    } catch { /* certains navigateurs jettent hors geste utilisateur */ }
+    setState(st => ({ ...st, granted: true, needsPermission: false }));
     return true;
   }, []);
 
   useEffect(() => {
     if (!state.granted) return;
-
     const ema = (prev, x, a) => (prev == null ? x : prev + a * (x - prev));
 
+    // Roll depuis la gravité (stable même à beta≈90°).
+    const onMotion = (e) => {
+      const g = e.accelerationIncludingGravity;
+      if (!g || g.x == null || g.y == null) return;
+      const rollRaw = Math.atan2(g.x, -g.y) * 180 / Math.PI;
+      s.current.roll = ema(s.current.roll, rollRaw, A_TILT);
+      setState(st => ({ ...st, rollDeg: s.current.roll }));
+    };
+
     const onOrient = (e) => {
-      let heading = null;
-      let source = 'none';
+      let heading = null, source = 'none';
       if (typeof e.webkitCompassHeading === 'number' && !Number.isNaN(e.webkitCompassHeading)) {
-        heading = e.webkitCompassHeading; // iOS : azimut magnétique
-        source = 'compass';
+        heading = e.webkitCompassHeading; source = 'compass';
       } else if (e.absolute && e.alpha != null) {
-        heading = (360 - e.alpha) % 360; // Android absolute
-        source = 'absolute';
+        heading = (360 - e.alpha) % 360; source = 'absolute';
       } else if (e.alpha != null) {
-        heading = (360 - e.alpha) % 360; // repère arbitraire, à recaler
-        source = 'relative';
+        heading = (360 - e.alpha) % 360; source = 'relative';
       }
 
       const acc = s.current;
-
-      // Élévation & roll : EMA linéaire.
       const elevRaw = e.beta == null ? null : e.beta - 90;
-      const rollRaw = e.gamma == null ? null : e.gamma;
       if (elevRaw != null) acc.elev = ema(acc.elev, elevRaw, A_TILT);
-      if (rollRaw != null) acc.roll = ema(acc.roll, rollRaw, A_TILT);
 
-      // Heading : EMA circulaire via sin/cos.
+      // Fallback roll depuis gamma UNIQUEMENT si pas de devicemotion (roll null).
+      if (acc.roll == null && e.gamma != null) acc.roll = ema(acc.roll, e.gamma, A_TILT);
+
       let headingOut = null;
       if (heading != null) {
         const r = heading * Math.PI / 180;
@@ -78,8 +86,8 @@ export function useOrientation() {
         headingOut = (Math.atan2(acc.sin, acc.cos) * 180 / Math.PI + 360) % 360;
       }
 
-      setState(s => ({
-        ...s,
+      setState(st => ({
+        ...st,
         elevationDeg: acc.elev,
         rollDeg: acc.roll,
         headingDeg: headingOut,
@@ -87,11 +95,14 @@ export function useOrientation() {
       }));
     };
 
-    // Android : préférer l'event "absolute" quand il existe
     const hasAbsolute = 'ondeviceorientationabsolute' in window;
-    const evt = hasAbsolute ? 'deviceorientationabsolute' : 'deviceorientation';
-    window.addEventListener(evt, onOrient, true);
-    return () => window.removeEventListener(evt, onOrient, true);
+    const oevt = hasAbsolute ? 'deviceorientationabsolute' : 'deviceorientation';
+    window.addEventListener(oevt, onOrient, true);
+    window.addEventListener('devicemotion', onMotion, true);
+    return () => {
+      window.removeEventListener(oevt, onOrient, true);
+      window.removeEventListener('devicemotion', onMotion, true);
+    };
   }, [state.granted]);
 
   return { ...state, requestAccess };

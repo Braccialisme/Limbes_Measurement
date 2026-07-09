@@ -96,6 +96,9 @@ html, body, #root {
   width: 100%; height: 100%;
   pointer-events: none;
 }
+/* fond noir opaque pour les onglets sans caméra (Maths, Journal) */
+.sheet-bg { position: absolute; inset: 0; background: var(--steel); z-index: 5; }
+
 /* horizon artificiel : conteneur plein écran tourné autour du centre */
 .art-horizon {
   position: absolute; inset: 0;
@@ -196,19 +199,21 @@ html, body, #root {
   display: flex; gap: 2px;
   border: 1px solid var(--brass);
   border-radius: 4px;
-  overflow: hidden;
+  overflow-x: auto;
+  max-width: 80vw;
   background: color-mix(in srgb, var(--steel) 70%, transparent);
   backdrop-filter: blur(6px);
 }
 .tab {
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.04em;
-  padding: 6px 10px;
+  letter-spacing: 0.02em;
+  padding: 6px 8px;
   background: transparent;
   color: var(--ivory-dim);
   border: none;
   cursor: pointer;
+  white-space: nowrap;
 }
 .tab.active { background: var(--brass); color: var(--ivory); font-weight: 600; }
 

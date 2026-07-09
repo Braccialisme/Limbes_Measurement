@@ -4,6 +4,7 @@ import { useGeolocation } from './hooks/useGeolocation.js';
 import { useCamera } from './hooks/useCamera.js';
 import { useCalibration } from './hooks/useCalibration.js';
 import { useJournal } from './hooks/useJournal.js';
+import { useDem } from './hooks/useDem.js';
 import { angularSeparationDeg, formatDMS } from './lib/geometry.js';
 import Reticle from './components/Reticle.jsx';
 import Readout from './components/Readout.jsx';
@@ -13,9 +14,10 @@ import Tabs from './components/Tabs.jsx';
 import Civil from './components/Civil.jsx';
 import Journal from './components/Journal.jsx';
 import Maths from './components/Maths.jsx';
+import Terre from './components/Terre.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09e · horizon CSS + lissage++';
+const BUILD = '2026-07-09g · roll gravité + DEM';
 
 export default function App() {
   const orient = useOrientation();
@@ -28,6 +30,7 @@ export default function App() {
 
   const { cal, save: saveCal } = useCalibration(lensKey);
   const journal = useJournal();
+  const dem = useDem();
   const [tab, setTab] = useState('sight'); // 'sight' | 'civil' | 'journal'
   const [calOpen, setCalOpen] = useState(false);
   // Hauteur d'œil mémorisée une fois (localStorage) — plus fiable qu'un auto.
@@ -109,7 +112,7 @@ export default function App() {
         <>
           <div className="topbar">
             <div className="tb-left">
-              {(tab === 'sight' || tab === 'civil') && (
+              {(tab === 'sight' || tab === 'civil' || tab === 'terre') && (
                 <LensControl
                   devices={devices}
                   deviceId={deviceId}
@@ -154,6 +157,26 @@ export default function App() {
             </>
           )}
 
+          {tab === 'terre' && (
+            <>
+              <Reticle
+                elevationDeg={orient.elevationDeg}
+                rollDeg={orient.rollDeg}
+                markA={markA}
+                markB={markB}
+              />
+              <Terre
+                fix={fix}
+                headingDeg={orient.headingDeg}
+                headingSource={orient.headingSource}
+                elevationDeg={orient.elevationDeg}
+                eyeHeightM={eyeHeightM}
+                dem={dem}
+                onSave={journal.add}
+              />
+            </>
+          )}
+
           {tab === 'civil' && (
             <Civil
               cal={cal}
@@ -163,15 +186,21 @@ export default function App() {
           )}
 
           {tab === 'journal' && (
-            <Journal
-              entries={journal.entries}
-              onRemove={journal.remove}
-              onClear={journal.clear}
-            />
+            <>
+              <div className="sheet-bg" />
+              <Journal
+                entries={journal.entries}
+                onRemove={journal.remove}
+                onClear={journal.clear}
+              />
+            </>
           )}
 
           {tab === 'maths' && (
-            <Maths eyeHeightM={eyeHeightM} cal={cal} />
+            <>
+              <div className="sheet-bg" />
+              <Maths eyeHeightM={eyeHeightM} cal={cal} />
+            </>
           )}
         </>
       )}

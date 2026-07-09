@@ -1,0 +1,88 @@
+/**
+ * dem.js — modèle numérique de terrain (phase 2, le cas "château").
+ * Fonctions pures : décodage terrarium, maths de tuiles slippy, et le
+ * ray-march qui trouve où la ligne de visée percute le relief.
+ * Le fetch/cache des tuiles et le canvas vivent ailleurs (effets de bord) ;
+ * ici tout est testable en injectant un échantillonneur `sample(lat,lon)`.
+ */
+import { DEG, EARTH_R_EFF, destinationPoint, targetAltitudeDeltaM } from './geometry.js';
+
+/**
+ * Décodage terrarium (AWS Terrain Tiles) : altitude en mètres depuis un
+ * pixel RGB. height = R*256 + G + B/256 − 32768. Deux lignes, comme promis.
+ */
+export function decodeTerrarium(r, g, b) {
+  return r * 256 + g + b / 256 - 32768;
+}
+
+/**
+ * (lat, lon) → coordonnées pixel GLOBALES au zoom z (projection Web Mercator
+ * slippy). tileSize par défaut 256. La partie entière / tileSize donne la
+ * tuile, le reste donne le pixel dans la tuile.
+ */
+export function lngLatToGlobalPixel(latDeg, lonDeg, z, tileSize = 256) {
+  const n = tileSize * Math.pow(2, z);
+  const x = ((lonDeg + 180) / 360) * n;
+  const latRad = latDeg * DEG;
+  const y =
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
+  return { x, y };
+}
+
+/** Tuile {z,x,y} contenant (lat,lon). */
+export function tileFor(latDeg, lonDeg, z, tileSize = 256) {
+  const p = lngLatToGlobalPixel(latDeg, lonDeg, z, tileSize);
+  return { z, x: Math.floor(p.x / tileSize), y: Math.floor(p.y / tileSize) };
+}
+
+/**
+ * Ray-march de la ligne de visée sur le relief.
+ * Depuis (lat, lon, observerAltM = sol DEM + hauteur d'œil), on marche le
+ * long de l'azimut par pas `stepM`. À chaque pas, l'altitude de la ligne de
+ * visée (targetAltitudeDeltaM, courbure comprise) est comparée au sol
+ * échantillonné. Première fois que la visée passe SOUS le sol = intersection.
+ * Interpolation linéaire entre les deux derniers pas pour affiner.
+ *
+ * @param sample (lat,lon) → altitude sol (m) ou null hors couverture.
+ * @returns { distanceM, altM, lat, lon } ou null (rien touché / hors DEM).
+ */
+export function rayMarchTerrain({
+  latDeg, lonDeg, observerAltM, azimuthDeg, elevationDeg,
+  sample, maxDistanceM = 60000, stepM = 25,
+}) {
+  let prevD = 0;
+  let prevGap = observerAltM - sampleOr(sample, latDeg, lonDeg); // visée − sol
+  // Si l'observateur est déjà sous le sol (donnée douteuse), on part quand même.
+
+  for (let d = stepM; d <= maxDistanceM; d += stepM) {
+    const p = destinationPoint(latDeg, lonDeg, azimuthDeg, d);
+    const ground = sample(p.latDeg, p.lonDeg);
+    if (ground == null) return null; // sorti de la couverture DEM
+    const rayAlt = observerAltM + targetAltitudeDeltaM(d, elevationDeg);
+    const gap = rayAlt - ground;
+
+    if (gap <= 0) {
+      // croisement entre prevD (gap>0) et d (gap<=0) : interpolation
+      const t = prevGap / (prevGap - gap); // 0..1
+      const hitD = prevD + t * (d - prevD);
+      const hit = destinationPoint(latDeg, lonDeg, azimuthDeg, hitD);
+      return {
+        distanceM: hitD,
+        altM: observerAltM + targetAltitudeDeltaM(hitD, elevationDeg),
+        lat: hit.latDeg,
+        lon: hit.lonDeg,
+      };
+    }
+    prevD = d;
+    prevGap = gap;
+  }
+  return null; // ligne de visée n'a rien percuté dans la portée
+}
+
+function sampleOr(sample, lat, lon) {
+  const v = sample(lat, lon);
+  return v == null ? 0 : v;
+}
+
+/** Rappel : rayon terrestre effectif utilisé (avec réfraction). */
+export const DEM_EARTH_R_EFF = EARTH_R_EFF;
