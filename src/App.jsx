@@ -12,9 +12,10 @@ import LensControl from './components/LensControl.jsx';
 import Tabs from './components/Tabs.jsx';
 import Civil from './components/Civil.jsx';
 import Journal from './components/Journal.jsx';
+import Maths from './components/Maths.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09d · lissage capteurs';
+const BUILD = '2026-07-09e · horizon CSS + lissage++';
 
 export default function App() {
   const orient = useOrientation();
@@ -108,7 +109,7 @@ export default function App() {
         <>
           <div className="topbar">
             <div className="tb-left">
-              {tab !== 'journal' && (
+              {(tab === 'sight' || tab === 'civil') && (
                 <LensControl
                   devices={devices}
                   deviceId={deviceId}
@@ -167,6 +168,10 @@ export default function App() {
               onRemove={journal.remove}
               onClear={journal.clear}
             />
+          )}
+
+          {tab === 'maths' && (
+            <Maths eyeHeightM={eyeHeightM} cal={cal} />
           )}
         </>
       )}

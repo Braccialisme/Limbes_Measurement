@@ -14,8 +14,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * lissé en circulaire (sin/cos) pour franchir 0/360 sans à-coup. alpha bas
  * = plus stable mais plus de latence ; on vise steady-avant-tap.
  */
-const A_TILT = 0.2;   // élévation & roll
-const A_HEAD = 0.15;  // azimut (circulaire)
+const A_TILT = 0.1;   // élévation & roll (bas = très stable)
+const A_HEAD = 0.1;   // azimut (circulaire)
 
 export function useOrientation() {
   const [state, setState] = useState({

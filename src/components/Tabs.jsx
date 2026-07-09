@@ -1,8 +1,9 @@
-/** Barre d'onglets en haut : Visée / Civil / Journal. */
+/** Barre d'onglets en haut : Visée / Civil / Journal / Maths. */
 const TABS = [
   ['sight', 'Visée'],
   ['civil', 'Civil'],
   ['journal', 'Journal'],
+  ['maths', 'Maths'],
 ];
 
 export default function Tabs({ tab, onTab }) {

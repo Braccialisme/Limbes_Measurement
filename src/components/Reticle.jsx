@@ -38,15 +38,16 @@ export default function Reticle({ elevationDeg, rollDeg, markA, markB }) {
   const roll = rollDeg ?? 0;
 
   return (
-    <svg className="reticle" viewBox="0 0 100 100" preserveAspectRatio="none">
-      {/* horizon artificiel — contre-tourne avec le roll */}
-      <g transform={`rotate(${-roll} ${cx} ${cy})`}>
-        <line x1={cx - 30} y1={cy} x2={cx - 6} y2={cy}
-          stroke="var(--ivory)" strokeWidth="0.3" opacity="0.85" />
-        <line x1={cx + 6} y1={cy} x2={cx + 30} y2={cy}
-          stroke="var(--ivory)" strokeWidth="0.3" opacity="0.85" />
-      </g>
+    <>
+      {/* Horizon artificiel — HORS du SVG étiré : un div tourné en CSS
+          (rotation uniforme, sans déformation d'aspect). Contre-tourne avec
+          le roll pour rester aligné sur l'horizontale vraie (niveau à bulle). */}
+      <div className="art-horizon" style={{ transform: `rotate(${-roll}deg)` }}>
+        <span className="ah-seg" />
+        <span className="ah-seg" />
+      </div>
 
+      <svg className="reticle" viewBox="0 0 100 100" preserveAspectRatio="none">
       {/* croix de visée */}
       <line x1={cx} y1={cy - 5} x2={cx} y2={cy - 1.5} stroke="var(--signal)" strokeWidth="0.35" />
       <line x1={cx} y1={cy + 1.5} x2={cx} y2={cy + 5} stroke="var(--signal)" strokeWidth="0.35" />
@@ -69,6 +70,7 @@ export default function Reticle({ elevationDeg, rollDeg, markA, markB }) {
           B ◆
         </text>
       )}
-    </svg>
+      </svg>
+    </>
   );
 }

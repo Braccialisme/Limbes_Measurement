@@ -96,6 +96,19 @@ html, body, #root {
   width: 100%; height: 100%;
   pointer-events: none;
 }
+/* horizon artificiel : conteneur plein écran tourné autour du centre */
+.art-horizon {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  gap: 44px;
+  pointer-events: none;
+  will-change: transform;
+}
+.ah-seg {
+  width: 22%; height: 1px;
+  background: var(--ivory);
+  opacity: 0.85;
+}
 .cam-error {
   position: absolute; top: 12px; left: 12px; right: 12px;
   color: var(--signal); font-size: 12px;
@@ -258,6 +271,27 @@ html, body, #root {
   font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- annexe maths ---- */
+.maths-list {
+  overflow-y: auto;
+  max-height: 62vh;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.maths-item { display: flex; flex-direction: column; gap: 4px; }
+.maths-head {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ivory);
+}
+.formula {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--signal);
+  white-space: pre-wrap;
+  line-height: 1.5;
+  margin: 0;
+  overflow-x: auto;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
