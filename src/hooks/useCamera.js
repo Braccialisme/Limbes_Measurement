@@ -43,7 +43,17 @@ export function useCamera(enabled) {
           .filter((d) => d.kind === 'videoinput');
         // Garder les objectifs ARRIÈRE (heuristique labels) ; sinon tout.
         const back = cams.filter((d) => /back|rear|arrière|environment|facing back/i.test(d.label));
-        setDevices(back.length ? back : cams);
+        const pool = back.length ? back : cams;
+        // Android expose des doublons logiques d'une même caméra physique :
+        // dédoublonner par groupId (garder le premier de chaque groupe).
+        const seen = new Set();
+        const unique = pool.filter((d) => {
+          const g = d.groupId || d.deviceId;
+          if (seen.has(g)) return false;
+          seen.add(g);
+          return true;
+        });
+        setDevices(unique);
         if (!deviceId && settings.deviceId) setDeviceId(settings.deviceId);
       } catch (e) {
         setError(e.message);

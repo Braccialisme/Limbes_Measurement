@@ -14,7 +14,7 @@ import Civil from './components/Civil.jsx';
 import Journal from './components/Journal.jsx';
 
 // Marqueur de build : sert à vérifier qu'on n'est pas sur un cache PWA périmé.
-const BUILD = '2026-07-09c · VG5000 · #1e2f8f';
+const BUILD = '2026-07-09d · lissage capteurs';
 
 export default function App() {
   const orient = useOrientation();
@@ -29,7 +29,15 @@ export default function App() {
   const journal = useJournal();
   const [tab, setTab] = useState('sight'); // 'sight' | 'civil' | 'journal'
   const [calOpen, setCalOpen] = useState(false);
-  const [eyeHeightM, setEyeHeightM] = useState(1.6);
+  // Hauteur d'œil mémorisée une fois (localStorage) — plus fiable qu'un auto.
+  const [eyeHeightM, setEyeHeightM] = useState(() => {
+    const v = Number(localStorage.getItem('limbe.eyeHeightM'));
+    return v > 0 ? v : 1.6;
+  });
+  const setEyeHeight = useCallback((v) => {
+    setEyeHeightM(v);
+    try { localStorage.setItem('limbe.eyeHeightM', String(v)); } catch { /* quota */ }
+  }, []);
   const [markA, setMarkA] = useState(null);
   const [markB, setMarkB] = useState(null);
 
@@ -133,7 +141,7 @@ export default function App() {
                 gpsError={gpsError}
                 cal={cal}
                 eyeHeightM={eyeHeightM}
-                onEyeHeight={setEyeHeightM}
+                onEyeHeight={setEyeHeight}
                 markA={markA}
                 markB={markB}
                 separationDeg={separationDeg}
